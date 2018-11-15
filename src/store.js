@@ -4,7 +4,13 @@ import Vuex from 'vuex';
 Vue.use(Vuex);
 
 export default new Vuex.Store({
-    state: {},
-    mutations: {},
+    state: {
+        systemMsg: '',
+    },
+    mutations: {
+        UPDATE_systemMsg(state, systemMsg) {
+            state.systemMsg = systemMsg;
+        },
+    },
     actions: {},
 });

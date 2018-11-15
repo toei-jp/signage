@@ -1,6 +1,11 @@
 .DS_Store
+Thumbs.db
 node_modules
-/dist
+# /dist
+dist/report.html
+
+/tests/e2e/videos/
+/tests/e2e/screenshots/
 
 # local env files
 .env.local

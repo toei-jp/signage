@@ -1,29 +1,131 @@
 <template>
     <div id="app">
-        <div id="nav">
-            <router-link to="/">Home</router-link> |
-            <router-link to="/about">About</router-link>
-        </div>
         <router-view />
     </div>
 </template>
 
+<script>
+export default {
+    name: 'app',
+};
+</script>
+
+
 <style lang="scss">
-#app {
-    font-family: 'Avenir', Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-align: center;
-    color: #2c3e50;
+* {
+    box-sizing: border-box;
 }
-#nav {
-    padding: 30px;
-    a {
-        font-weight: bold;
-        color: #2c3e50;
-        &.router-link-exact-active {
-            color: #42b983;
-        }
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+}
+table,
+tr,
+td,
+th {
+    padding: 0;
+}
+#app {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    -webkit-font-smoothing: antialiased;
+}
+
+.icon-clock {
+    &::before {
+        content: '';
+        display: inline-block;
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-image: url('./assets/icon_clock.svg');
     }
+}
+
+.anim-loading {
+    margin: 2em auto;
+    width: 24px;
+    height: 24px;
+    position: relative;
+    &::before,
+    &::after {
+        content: '';
+        display: block;
+        background-color: #fff;
+        width: 8px;
+        height: 8px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        animation: sk-cubemove 1.8s infinite ease-in-out;
+    }
+    &::after {
+        animation-delay: -0.9s;
+    }
+}
+
+@keyframes sk-cubemove {
+    25% {
+        transform: translateX(15px) rotate(-90deg) scale(0.5);
+    }
+    50% {
+        transform: translateX(15px) translateY(15px) rotate(-179deg);
+    }
+    50.1% {
+        transform: translateX(15px) translateY(15px) rotate(-180deg);
+    }
+    75% {
+        transform: translateX(0px) translateY(15px) rotate(-270deg) scale(0.5);
+    }
+    100% {
+        transform: rotate(-360deg);
+    }
+}
+
+@keyframes sk-cubemove-small {
+    25% {
+        transform: translateX(8px) rotate(-90deg) scale(0.5);
+    }
+    50% {
+        transform: translateX(8px) translateY(8px) rotate(-179deg);
+    }
+    50.1% {
+        transform: translateX(8px) translateY(8px) rotate(-180deg);
+    }
+    75% {
+        transform: translateX(0px) translateY(8px) rotate(-270deg) scale(0.5);
+    }
+    100% {
+        transform: rotate(-360deg);
+    }
+}
+
+.fade-leave-to {
+    display: none;
+}
+.fade-enter-active,
+.fade-leave-active {
+    transition: all 1s;
+}
+.fade-enter,
+.fade-leave-active {
+    opacity: 0;
+}
+
+.fadeup-leave-to {
+    display: none;
+}
+.fadeup-enter-active,
+.fadeup-leave-active {
+    transition: all 0.4s;
+}
+.fadeup-enter,
+.fadeup-leave-active {
+    opacity: 0;
+    transform: translateY(25px);
 }
 </style>
