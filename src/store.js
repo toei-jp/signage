@@ -12,5 +12,4 @@ export default new Vuex.Store({
             state.systemMsg = systemMsg;
         },
     },
-    actions: {},
 });

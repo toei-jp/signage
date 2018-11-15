@@ -123,7 +123,7 @@ export default {
                 Object.defineProperties(Vue.prototype, {
                     $cinerino: {
                         get() {
-                            return { checkAuth, getAuthedServices }; // 各所で呼べるようにここに持っておく // 認証で使うため外に出しておく
+                            return { checkAuth, getAuthedServices };
                         },
                     },
                 });

@@ -5,8 +5,6 @@ import store from './store';
 
 Vue.use(VueRouter);
 
-Vue.use(VueRouter);
-
 const Router = new VueRouter({
     routes: [
         {
@@ -18,9 +16,6 @@ const Router = new VueRouter({
             path: '/view/:branchCode',
             name: 'scheduleView',
             component: ScheduleView,
-            meta: {
-                auth_required: true,
-            },
         },
     ],
 });
