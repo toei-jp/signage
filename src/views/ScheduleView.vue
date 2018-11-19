@@ -1,28 +1,31 @@
 <template>
     <div class="maincontent">
         <div class="maintable">
-            <div v-for="(key) in performanceMovieIdArray" :key="key" class="tablerow">
-                <template v-if="screeningEventsByMovieId[key]">
+            <div v-for="(_, rowNum) in [...Array(5)]" :key="rowNum" class="tablerow">
+                <template>
                     <div class="tablecell tablecell-title">
-                        <div class="title">
-                            <div class="marks">
-                                <span class="mark mark-rating" v-if="screeningEventsByMovieId[key][0].contentRating">
-                                    {{ screeningEventsByMovieId[key][0].contentRating }}
-                                </span>
+                        <div class="title" v-if="performanceMovieIdArray[rowNum] && screeningEventsByMovieId[performanceMovieIdArray[rowNum]]">
+
+                            <div class="title-main-and-sub">
+                                <div :class="['title-main', { 'title-main-rating': screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].contentRating }]">
+                                    <h1>{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].signageDisplayName }}</h1>
+                                    <span class="mark mark-rating" v-if="screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].contentRating">
+                                        {{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].contentRating }}
+                                    </span>
+                                </div>
+                                <h2>{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].signageDislaySubtitleName }}</h2>
                             </div>
-                            <h1>{{ screeningEventsByMovieId[key][0].signageDisplayName }}</h1>
-                            <h2>{{ screeningEventsByMovieId[key][0].signageDislaySubtitleName }}</h2>
-                            <p>{{ screeningEventsByMovieId[key][0].signageDisplayEnglishName }}</p>
+                            <p class="title-en">{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].signageDisplayEnglishName }}</p>
                         </div>
                     </div>
-                    <div v-for="pf in screeningEventsByMovieId[key]" :key="pf.id" class="tablecell tablecell-pf">
-                        <div class="pf">
+                    <div v-for="(_, i) in [...Array(6)]" :key="`pf${rowNum}${i}`" class="tablecell tablecell-pf">
+                        <div class="pf" v-if="screeningEventsByMovieId[performanceMovieIdArray[rowNum]] && screeningEventsByMovieId[performanceMovieIdArray[rowNum]][i]">
                             <div class="pf-time">
-                                <h2>{{ pf.startHHmm }}</h2>
+                                <h2>{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][i].startHHmm }}</h2>
                             </div>
                             <div class="pf-data">
-                                <div :class="`pf-data-status pf-data-status-${pf.availabilityName}`"><span></span></div>
-                                <div class="pf-data-floor">{{ pf.addressEnglish }}</div>
+                                <div :class="`pf-data-status pf-data-status-${screeningEventsByMovieId[performanceMovieIdArray[rowNum]][i].availabilityName}`"><span></span></div>
+                                <div class="pf-data-floor">{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][i].addressEnglish }}</div>
                             </div>
                         </div>
                     </div>
@@ -65,9 +68,7 @@ export default {
         },
         // 作品ID配列
         performanceMovieIdArray() {
-            const keys = Object.keys(this.screeningEventsByMovieId);
-            keys.length = 5; // 足りなくて多くても常に5行表示する
-            return keys;
+            return Object.keys(this.screeningEventsByMovieId);
         },
     },
     methods: {
@@ -172,7 +173,7 @@ export default {
                     }
                     a[b.superEvent.id].push({
                         id: b.id,
-                        contentRating: b.contentRating !== 'G' ? b.contentRating : '',
+                        contentRating: b.workPerformed.contentRating !== 'G' ? b.workPerformed.contentRating : '',
                         videoFormat: b.superEvent.videoFormat,
                         soundFormat: b.superEvent.soundFormat,
                         startHHmm: moment(b.startDate).format('HH:mm'),
@@ -208,6 +209,12 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+$color_tablerow_bg_odd: #0a318e;
+$color_floor_bg_odd: #0e326e;
+$color_tablerow_bg_even: #004098;
+$color_floor_bg_even: #013a7f;
+$color_status_bg: #092147;
+
 .maincontent {
     width: 100vw;
     height: 56.25vw;
@@ -226,21 +233,27 @@ export default {
         width: 100%;
         height: 51vw;
         .tablerow {
-            background: #0a318e;
+            background: $color_tablerow_bg_odd;
             border-top: 2px solid #c2cde3;
             flex: 1;
             height: 20%; // ※BrightSignのため必要
             &:first-child {
                 border: none;
             }
-            .marks {
-                background: #0a318e;
+            .mark {
+                background: $color_tablerow_bg_odd;
+            }
+            .pf-data-floor {
+                background: $color_floor_bg_odd;
             }
         }
         .tablerow:nth-child(even) {
-            background: #004098;
-            .marks {
-                background: #004098;
+            background: $color_tablerow_bg_even;
+            .mark {
+                background: $color_tablerow_bg_even;
+            }
+            .pf-data-floor {
+                background: $color_floor_bg_even;
             }
         }
         .tablecell {
@@ -252,39 +265,53 @@ export default {
             width: 40%;
             padding: 0.8vw;
             border-right: 2px solid #000;
+            position: relative;
+            height: 100%;
             .title {
                 position: relative;
+                width: 100%;
+                height: 100%;
                 h1,
                 h2,
                 p {
                     height: 1.5em;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: hidden;
                     line-height: 1.5;
+                    overflow-y: hidden;
+                    word-break: break-all;
                 }
-                h1 {
-                    font-size: 2.2vw;
+                .title-main-and-sub {
+                    position: absolute;
+                    width: 100%;
+                    left: 0;
+                    top: 50%;
+                    transform: translateY(-50%);
+                }
+                .title-main {
+                    position: relative;
+                    h1 {
+                        font-size: 2.4vw;
+                    }
+                    &.title-main-rating {
+                        padding-right: 6.4vw;
+                    }
+                    .mark {
+                        position: absolute;
+                        right: 0;
+                        top: 0;
+                        padding: 0 0.5vw;
+                        font-size: 1.6vw;
+                        line-height: 2;
+                        border: 1px solid #fff;
+                    }
                 }
                 h2 {
                     font-size: 1.2vw;
-                    margin-bottom: 0.5vw;
                     font-weight: lighter;
                 }
-                p {
-                    font-size: 1vw;
-                }
-                .marks {
+                .title-en {
                     position: absolute;
-                    right: -0.5vw;
-                    top: -0.5vw;
-                    padding: 0 0 1em 0;
-                }
-                .mark {
-                    padding: 0 0.5vw;
-                    font-size: 1.6vw;
-                    line-height: 2;
-                    border: 1px solid #fff;
+                    bottom: 0;
+                    font-size: 1vw;
                 }
             }
         }
@@ -322,7 +349,7 @@ export default {
                         }
                     }
                     .pf-data-status {
-                        background: #092147;
+                        background: $color_status_bg;
                         font-size: 2vw;
                         span {
                             width: 100%;
@@ -345,7 +372,7 @@ export default {
                             background-image: url(../assets/icon_status_crowded.svg);
                         }
                         &.pf-data-status-soldout span::before {
-                            color: red;
+                            color: #e71f18;
                             content: '完売';
                             display: table-cell;
                             vertical-align: middle;
