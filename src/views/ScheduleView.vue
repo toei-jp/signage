@@ -220,7 +220,7 @@ $color_status_bg: #092147;
     height: 56.25vw;
     background: #000;
     color: #fff;
-    padding: 1vw;
+    padding: 0.5vw;
     overflow: hidden;
     h1,
     h2,
@@ -311,6 +311,7 @@ $color_status_bg: #092147;
                 .title-en {
                     position: absolute;
                     bottom: 0;
+                    left: 0.2vw;
                     font-size: 1vw;
                 }
             }
