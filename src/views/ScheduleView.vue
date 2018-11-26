@@ -162,7 +162,8 @@ export default {
                     }
                     return 0;
                 });
-                // 上映を作品ごとにまとめつつ整形する
+                // 上映情報を作品ごとにまとめつつ整形する
+                const additionalPropsByMovieId = {};
                 const screeningEventsByMovieId = screeningEvents.reduce((a, b) => {
                     if (!a[b.superEvent.id]) {
                         a[b.superEvent.id] = [];
@@ -171,14 +172,23 @@ export default {
                     if (a[b.superEvent.id].length === 6) {
                         return a;
                     }
+                    // サイネージ表示用タイトル/サブタイトルはadditionalProperty配列の中に入っている
+                    let additionalProps = additionalPropsByMovieId[b.superEvent.id];
+                    if (!additionalProps) {
+                        additionalPropsByMovieId[b.superEvent.id] = b.superEvent.additionalProperty.reduce((ap, bp) => {
+                            ap[bp.name] = bp.value;
+                            return ap;
+                        }, {});
+                        additionalProps = additionalPropsByMovieId[b.superEvent.id] || {};
+                    }
                     a[b.superEvent.id].push({
                         id: b.id,
                         contentRating: b.workPerformed.contentRating !== 'G' ? b.workPerformed.contentRating : '',
                         videoFormat: b.superEvent.videoFormat,
                         soundFormat: b.superEvent.soundFormat,
                         startHHmm: moment(b.startDate).format('HH:mm'),
-                        signageDisplayName: b.superEvent.signageDisplayName,
-                        signageDislaySubtitleName: b.superEvent.signageDislaySubtitleName,
+                        signageDisplayName: additionalProps.signageDisplayName || b.superEvent.name.ja,
+                        signageDislaySubtitleName: additionalProps.signageDislaySubtitleName || b.superEvent.headline.ja,
                         signageDisplayEnglishName: b.superEvent.name.en,
                         addressEnglish: b.location.address.en,
                         availabilityName: this.getAvailabilityNameByRemainingAttendeeCapacity(b.remainingAttendeeCapacity),

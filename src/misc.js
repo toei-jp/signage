@@ -12,7 +12,7 @@ export function sleep(ms) {
 export function fetchEnv() {
     return new Promise(async (resolve, reject) => {
         try {
-            const env = (await axios.get('/env.php')).data;
+            const env = (await axios.get('/env')).data;
             if (
                 typeof env !== 'object' ||
                 !env.authConfig ||
@@ -25,7 +25,7 @@ export function fetchEnv() {
                 !env.cognitoUser.userId ||
                 !env.cognitoUser.password
             ) {
-                throw new Error('env.php invalid reposponce');
+                throw new Error('/env invalid respoponse');
             }
             return resolve(env);
         } catch (e) {

@@ -7,9 +7,11 @@ dist/report.html
 /tests/e2e/videos/
 /tests/e2e/screenshots/
 
+env*bat
+
 # local env files
-.env.local
-.env.*.local
+# .env.local
+# .env.*.local
 
 # Log files
 npm-debug.log*

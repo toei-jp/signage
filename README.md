@@ -1,15 +1,17 @@
 # toei_signage_frontend
-TOEIサイネージ用。
+TOEIサイネージ用フロントエンド(サーバの環境変数を読むための単品PHP以外は全て静的ファイル)
 前提としてデプロイ先にはBasic認証をかける(`/public/web.config`で設定)
 →STBは入力装置を持たないのでURLにIDとパスを載せる形で認証する
 
-CinerinoAPI利用のための認証情報はサーバの環境変数にしてアプリ初期化時に`GET /env.php`で取得する。
-→ローカル開発時はdevServerのbeforeフックで`vue.config.js`に記述した値を利用する。
+CinerinoAPI利用のためのCognito認証情報はサーバの環境変数にしてアプリ初期化時に`GET /env`(簡便なPHP1個)で取得する。
+→ローカル開発時はdevServerのbeforeフックで値を拾う
 
-Cognitoの認証処理は確実化のため`aws-amplify`を利用する(`cinerino-api-javascript-client`の独自実装のiframe認証は動かないので他アプリでも使われていない)
+Cognito認証処理は確実化のため`cinerino-api-javascript-client`の独自実装(動かない)認証ではなく`aws-amplify`を利用する
 →Cognito User Poolsに専用クライアントとユーザーを作成してUSER_PASSWORD_AUTHで認証する
 
-現場に再起動操作を強いる状況を減らすため、認証や情報取得に失敗しても1分おきにリトライし続ける
+Cinerinoはクライアントのラッパー(`/src/plugins/cinerio.js`)を介して利用する
+
+現場にSTBの再起動操作を強いる状況を減らすため、認証や情報取得に失敗しても1分おきにリトライし続ける
 環境変数を5分おきに取得して、変更を検知したらリロードする
 
 フォントファイルはBrightSign本体に埋め込んでアップロードはしない。

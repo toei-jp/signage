@@ -4,7 +4,7 @@
  * 非同期のCognito認証ありきなので通常のプラグインのようにVue.use()はせずasyncでinstall()する
  */
 import Auth from '@aws-amplify/auth';
-import * as cinerino from '@toei-jp/cinerino-api-javascript-client';
+import * as cinerino from '@cinerino/api-javascript-client';
 
 let cognitoUserId = '';
 let cognitoUserPw = '';
@@ -40,6 +40,11 @@ const siginInAndSetAccessToken = () => {
         try {
             const signInResponse = await Auth.signIn(cognitoUserId, cognitoUserPw);
             console.log('[cinerinoPlugin[siginInAndGetAccessToken] signInResponse', signInResponse);
+            if (signInResponse.challengeName === 'NEW_PASSWORD_REQUIRED') {
+                const completeNewPasswordChallengeResponse = await signInResponse.completeNewPasswordChallenge('M0P!X-signage');
+                console.log('[cinerinoPlugin[siginInAndGetAccessToken] completeNewPasswordChallengeResponse', completeNewPasswordChallengeResponse);
+                return window.location.reload(true);
+            }
             // ユーザーのSTATUSがCONFIRMEDで無くてもsignIn自体は成功するのでcurrentAuthenticatedUserを取る
             const currentAuthenticatedUser = await Auth.currentAuthenticatedUser();
             console.log('[cinerinoPlugin][siginInAndGetAccessToken] currentAuthenticatedUser', currentAuthenticatedUser);
@@ -48,6 +53,7 @@ const siginInAndSetAccessToken = () => {
         } catch (e) {
             reject(typeof e === 'string' ? new Error(`Auth Error: ${e}`) : e);
         }
+        return true;
     });
 };
 

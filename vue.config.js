@@ -6,19 +6,19 @@ module.exports = {
         host: '0.0.0.0',
         port: 6789,
         before: (app) => {
-            app.get('/env.php', (req, res) => {
+            app.get('/env', (req, res) => {
                 res.json({
                     authConfig: {
-                        identityPoolId: 'ap-northeast-1:49f4caee-80e0-429a-8f8d-4850b626d96d',
-                        region: 'ap-northeast-1',
-                        userPoolId: 'ap-northeast-1_R3R4XRoqu',
-                        userPoolWebClientId: '23up1g9t83rqdnimn1gluv9a4o',
+                        identityPoolId: process.env.COGNITO_IDENTITY_POOL_ID,
+                        region: process.env.COGNITO_REGION,
+                        userPoolId: process.env.COGNITO_USER_POOL_ID,
+                        userPoolWebClientId: process.env.COGNITO_USER_POOL_CLIENT_ID,
                     },
                     cognitoUser: {
-                        userId: 'signage-development',
-                        password: 'M0P!X-signage',
+                        userId: process.env.COGNITO_USER_ID,
+                        password: process.env.COGNITO_USER_PASSWORD,
                     },
-                    CINERINO_API_ENDPOINT: 'https://toei-cinerino-api-development.azurewebsites.net',
+                    CINERINO_API_ENDPOINT: process.env.CINERINO_API_ENDPOINT,
                 });
             });
         },

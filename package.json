@@ -12,7 +12,7 @@
     },
     "dependencies": {
         "@aws-amplify/auth": "^1.2.10",
-        "@toei-jp/cinerino-api-javascript-client": "^1.0.0-alpha.34",
+        "@cinerino/api-javascript-client": "^1.0.0-alpha.23",
         "axios": "^0.18.0",
         "deep-diff": "^1.0.2",
         "es6-promise": "^4.2.5",
