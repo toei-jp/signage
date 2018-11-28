@@ -12,7 +12,7 @@ CinerinoAPI利用のためのCognito認証情報はサーバの環境変数に�
 CinerinoクライアントはfetchAPIを使っているので外付けタイムアウトを`CINERINO_SCHEDULE_FETCH_TIMEOUT`ミリ秒で設定する
 
 現場に再起動操作を強いる状況を減らすため、認証や情報取得に失敗しても1分おきにリトライし続ける
-環境変数を5分おきに取得して、変更を検知したらリロードする
+環境変数を3分おきに取得して、変更を検知したらリロードする
 
 BrightSignは`window.navigator.onLine`とOnline/Offlineイベントが機能しないので注意する
 

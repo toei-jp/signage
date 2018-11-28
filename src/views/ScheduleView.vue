@@ -34,7 +34,7 @@
         </div>
         <footer>
             <div class="clockcontainer">
-                <clock class="clock" @tick="update()" @tick5min="checkEnv()"></clock>
+                <clock class="clock" @tick="update()" @tick3min="checkEnv()"></clock>
             </div>
             <div class="msg">
                 <span class="anim-loading" v-if="busy_update"></span>

@@ -24,7 +24,7 @@ export function promiseTimeoutWrapper(ms, promise) {
 export function fetchEnv() {
     return new Promise(async (resolve, reject) => {
         try {
-            const env = (await axios.get('/env')).data;
+            const env = (await axios.get(`/env?${Date.now()}`)).data;
             if (
                 // 必須な値の確認
                 typeof env !== 'object' ||

@@ -1,6 +1,12 @@
 <template>
     <span class="clock">
-        {{ date }}<span class="dayname">{{ dayname }}</span><span class="time icon-clock">{{ HH }}<span class="colon">:</span>{{ mm }}</span>
+        {{ date }}
+        <span class="dayname">{{ dayname }}</span>
+        <span class="time icon-clock">
+            {{ HH }}
+            <span class="colon">:</span>
+            {{ mm }}
+        </span>
     </span>
 </template>
 
@@ -8,8 +14,8 @@
 import * as moment from 'moment';
 import { getNextTickUnixtime } from '../misc';
 
-// 5分おきの着火用カウント
-let min5Count = 0;
+// 3分おきの着火用カウント
+let min3Count = 0;
 
 export default {
     data() {
@@ -38,10 +44,10 @@ export default {
             this.timeoutInstance_updateMoment = setTimeout(() => {
                 this.moment_now = moment();
                 this.$emit('tick');
-                min5Count++;
-                if (min5Count === 5) {
-                    min5Count = 0;
-                    this.$emit('tick5min');
+                min3Count++;
+                if (min3Count === 3) {
+                    min3Count = 0;
+                    this.$emit('tick3min');
                 }
                 this.setTimeoutUpdateMoment();
             }, getNextTickUnixtime());
