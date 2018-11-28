@@ -22,6 +22,7 @@ STBで開くURLに`https://${basic認証ID}:${basic認証パスワード}@******
 
 ## Environment Variables
 ```
+set STATUS_THRESHOLD_CROWDED=**********「〇」が「△」になる残席数閾値(デフォルト=10)**********
 set CINERINO_API_ENDPOINT=**********CINERINO_APIエンドポイント**********
 set COGNITO_IDENTITY_POOL_ID=**********COGNITO IDENTITY POOL ID**********
 set COGNITO_REGION=**********COGNITO_REGION**********
