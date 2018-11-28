@@ -1,6 +1,7 @@
 <?php
 $appConfigFromServer = [
     'STATUS_THRESHOLD_CROWDED' => $_SERVER['STATUS_THRESHOLD_CROWDED'],
+    'CINERINO_SCHEDULE_FETCH_TIMEOUT' => $_SERVER['CINERINO_SCHEDULE_FETCH_TIMEOUT'],
     'authConfig' => [
         'identityPoolId' => $_SERVER['COGNITO_IDENTITY_POOL_ID'],
         'region' => $_SERVER['COGNITO_REGION'],
