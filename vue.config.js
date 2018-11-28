@@ -8,6 +8,7 @@ module.exports = {
         before: (app) => {
             app.get('/env', (req, res) => {
                 res.json({
+                    STATUS_THRESHOLD_CROWDED: process.env.STATUS_THRESHOLD_CROWDED,
                     authConfig: {
                         identityPoolId: process.env.COGNITO_IDENTITY_POOL_ID,
                         region: process.env.COGNITO_REGION,

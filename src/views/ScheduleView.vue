@@ -2,34 +2,34 @@
     <div class="maincontent">
         <div class="maintable">
             <div v-for="(_, rowNum) in [...Array(5)]" :key="rowNum" class="tablerow">
-                <template>
-                    <div class="tablecell tablecell-title">
-                        <div class="title" v-if="performanceMovieIdArray[rowNum] && screeningEventsByMovieId[performanceMovieIdArray[rowNum]]">
-
-                            <div class="title-main-and-sub">
-                                <div :class="['title-main', { 'title-main-rating': screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].contentRating }]">
-                                    <h1>{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].signageDisplayName }}</h1>
-                                    <span class="mark mark-rating" v-if="screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].contentRating">
-                                        {{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].contentRating }}
-                                    </span>
-                                </div>
-                                <h2>{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].signageDislaySubtitleName }}</h2>
+                <div class="tablecell tablecell-title">
+                    <div class="title" v-if="performanceMovieIdArray[rowNum] && screeningEventsByMovieId[performanceMovieIdArray[rowNum]]">
+                        <div class="title-main-and-sub">
+                            <div :class="['title-main', { 'title-main-rating': screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].contentRating }]">
+                                <h1>{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].signageDisplayName }}</h1>
+                                <span
+                                    class="mark mark-rating"
+                                    v-if="screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].contentRating"
+                                >{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].contentRating }}</span>
                             </div>
-                            <p class="title-en">{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].signageDisplayEnglishName }}</p>
+                            <h2>{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].signageDislaySubtitleName }}</h2>
+                        </div>
+                        <p class="title-en">{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].signageDisplayEnglishName }}</p>
+                    </div>
+                </div>
+                <div v-for="(_, i) in [...Array(6)]" :key="`pf${rowNum}${i}`" class="tablecell tablecell-pf">
+                    <div class="pf" v-if="screeningEventsByMovieId[performanceMovieIdArray[rowNum]] && screeningEventsByMovieId[performanceMovieIdArray[rowNum]][i]">
+                        <div class="pf-time">
+                            <h2>{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][i].startHHmm }}</h2>
+                        </div>
+                        <div class="pf-data">
+                            <div :class="`pf-data-status pf-data-status-${screeningEventsByMovieId[performanceMovieIdArray[rowNum]][i].availabilityName}`">
+                                <span></span>
+                            </div>
+                            <div class="pf-data-floor">{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][i].addressEnglish }}</div>
                         </div>
                     </div>
-                    <div v-for="(_, i) in [...Array(6)]" :key="`pf${rowNum}${i}`" class="tablecell tablecell-pf">
-                        <div class="pf" v-if="screeningEventsByMovieId[performanceMovieIdArray[rowNum]] && screeningEventsByMovieId[performanceMovieIdArray[rowNum]][i]">
-                            <div class="pf-time">
-                                <h2>{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][i].startHHmm }}</h2>
-                            </div>
-                            <div class="pf-data">
-                                <div :class="`pf-data-status pf-data-status-${screeningEventsByMovieId[performanceMovieIdArray[rowNum]][i].availabilityName}`"><span></span></div>
-                                <div class="pf-data-floor">{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][i].addressEnglish }}</div>
-                            </div>
-                        </div>
-                    </div>
-                </template>
+                </div>
             </div>
         </div>
         <footer>
@@ -93,7 +93,7 @@ export default {
             if (!remainingAttendeeCapacity) {
                 return 'soldout';
             }
-            if (remainingAttendeeCapacity <= 10) {
+            if (remainingAttendeeCapacity <= (window.appEnv.STATUS_THRESHOLD_CROWDED || 10)) {
                 return 'crowded';
             }
             return 'vacant';
