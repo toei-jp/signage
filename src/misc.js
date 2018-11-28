@@ -8,12 +8,25 @@ export function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// Promiseにタイムアウトを付ける
+export function promiseTimeoutWrapper(ms, promise) {
+    return Promise.race([
+        new Promise((resolve, reject) =>
+            setTimeout(() => {
+                return reject(new Error(`Timeout Error (${ms}ms)`));
+            }, ms),
+        ),
+        promise,
+    ]);
+}
+
 // 環境変数をサーバから得る
 export function fetchEnv() {
     return new Promise(async (resolve, reject) => {
         try {
             const env = (await axios.get('/env')).data;
             if (
+                // 必須な値の確認
                 typeof env !== 'object' ||
                 !env.authConfig ||
                 !env.cognitoUser ||

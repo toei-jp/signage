@@ -48,7 +48,7 @@
 <script>
 import * as moment from 'moment';
 import { diff } from 'deep-diff';
-import { sleep, fetchEnv } from '../misc';
+import { sleep, promiseTimeoutWrapper, fetchEnv } from '../misc';
 
 moment.locale('ja');
 
@@ -99,13 +99,13 @@ export default {
             return 'vacant';
         },
         // URLの劇場コードから劇場を取得・保存する
-        fetchTheterByUrlParam() {
+        fetchTheaterByUrlParam() {
             return new Promise(async (resolve, reject) => {
                 this.$store.commit('UPDATE_systemMsg', `劇場コード ${this.branchCode} の情報を取得中...`);
                 try {
                     const { organizationService } = await this.$cinerino.getAuthedServices();
                     // cinerinoAPIはbranchCodeでtheaterを検索できない(定義はあるが実装されていない)ので一旦全て拾う
-                    const allTheaterArray = (await organizationService.searchMovieTheaters({})).data;
+                    const allTheaterArray = (await promiseTimeoutWrapper(180000, organizationService.searchMovieTheaters({}))).data;
                     const theater = allTheaterArray.filter((t) => {
                         return t.location.branchCode === this.branchCode;
                     })[0];
@@ -127,24 +127,28 @@ export default {
             }
             this.busy_update = true;
             try {
+                // BrightSignはnavigator.onLineが機能しない！
                 if (!window.navigator.onLine) {
                     throw new Error('端末がオフライン状態です');
                 }
                 if (!this.theater) {
-                    await this.fetchTheterByUrlParam();
+                    await this.fetchTheaterByUrlParam();
                 }
-                const { eventService } = await this.$cinerino.getAuthedServices();
                 const moment_now = moment();
-                const screeningEvents = (await eventService.searchScreeningEvents({
-                    superEvent: {
-                        locationBranchCodes: [this.theater.location.branchCode],
-                    },
-                    startFrom: moment_now.toDate(),
-                    endThrough: moment()
-                        .hour(23)
-                        .minute(59)
-                        .toDate(),
-                })).data.filter((event) => {
+                const { eventService } = await this.$cinerino.getAuthedServices();
+                const screeningEvents = (await promiseTimeoutWrapper(
+                    window.appEnv.CINERINO_SCHEDULE_FETCH_TIMEOUT || 50000,
+                    eventService.searchScreeningEvents({
+                        superEvent: {
+                            locationBranchCodes: [this.theater.location.branchCode],
+                        },
+                        startFrom: moment_now.toDate(),
+                        endThrough: moment()
+                            .hour(23)
+                            .minute(59)
+                            .toDate(),
+                    }),
+                )).data.filter((event) => {
                     // 購入可能状態の上映だけ抽出する
                     return /EventScheduled|EventRescheduled/.test(event.eventStatus) && moment_now.isBetween(event.offers.validFrom, event.offers.validThrough);
                 });
@@ -198,7 +202,7 @@ export default {
                 this.screeningEventsByMovieId = screeningEventsByMovieId;
                 this.$store.commit('UPDATE_systemMsg', '');
             } catch (e) {
-                this.$store.commit('UPDATE_systemMsg', `更新処理に失敗しました (${e.message})`);
+                this.$store.commit('UPDATE_systemMsg', `更新処理に失敗しました (${moment().format('HH:mm')})(${e.message})`);
             }
             this.busy_update = false;
             return true;
@@ -206,7 +210,7 @@ export default {
     },
     async created() {
         try {
-            await this.fetchTheterByUrlParam();
+            await this.fetchTheaterByUrlParam();
             this.$store.commit('UPDATE_systemMsg', `「${this.theater.name.ja}」のスケジュールを取得中...`);
             this.busy_update = false;
             this.update();
@@ -247,6 +251,7 @@ $color_status_bg: #092147;
             border-top: 2px solid #c2cde3;
             flex: 1;
             height: 20%; // ※BrightSignのため必要
+            overflow: hidden;
             &:first-child {
                 border: none;
             }
@@ -276,7 +281,7 @@ $color_status_bg: #092147;
             padding: 0.8vw;
             border-right: 2px solid #000;
             position: relative;
-            height: 100%;
+            height: 101%;
             .title {
                 position: relative;
                 width: 100%;
@@ -328,6 +333,7 @@ $color_status_bg: #092147;
         }
         .tablecell-pf {
             width: 10%;
+            height: 101%;
             text-align: center;
             border-right: 2px solid #000;
             .pf {
@@ -341,6 +347,7 @@ $color_status_bg: #092147;
                 }
                 .pf-time {
                     border-bottom: 2px solid #000;
+                    height: 50%;
                     > h2 {
                         display: table-cell;
                         vertical-align: middle;

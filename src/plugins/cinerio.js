@@ -1,7 +1,9 @@
 /**
- * Cinerino利用プラグイン with AWS-Amplify (this.$cinerino)
+ * Cinerino利用ラッパープラグイン (this.$cinerino)
  *
  * 非同期のCognito認証ありきなので通常のプラグインのようにVue.use()はせずasyncでinstall()する
+ * 認証処理は全てAWS-Amplifyで行う(CinerinoクライアントはJWTを渡せば動く)
+ * ※CinerinoクライアントはfetchAPIが使われているのでリクエスト時は別途タイムアウト処理を付ける必要あり
  */
 import Auth from '@aws-amplify/auth';
 import * as cinerino from '@cinerino/api-javascript-client';
