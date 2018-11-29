@@ -11,7 +11,6 @@ module.exports = {
                     STATUS_THRESHOLD_CROWDED: process.env.STATUS_THRESHOLD_CROWDED,
                     CINERINO_SCHEDULE_FETCH_TIMEOUT: process.env.CINERINO_SCHEDULE_FETCH_TIMEOUT,
                     authConfig: {
-                        identityPoolId: process.env.COGNITO_IDENTITY_POOL_ID,
                         region: process.env.COGNITO_REGION,
                         userPoolId: process.env.COGNITO_USER_POOL_ID,
                         userPoolWebClientId: process.env.COGNITO_USER_POOL_CLIENT_ID,
