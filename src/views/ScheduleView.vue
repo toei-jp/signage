@@ -6,15 +6,17 @@
                     <div class="title" v-if="performanceMovieIdArray[rowNum] && screeningEventsByMovieId[performanceMovieIdArray[rowNum]]">
                         <div class="title-main-and-sub">
                             <div :class="['title-main', { 'title-main-rating': screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].contentRating }]">
-                                <h1>{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].signageDisplayName }}</h1>
+                                <h1>{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].title }}</h1>
                                 <span
                                     class="mark mark-rating"
                                     v-if="screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].contentRating"
                                 >{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].contentRating }}</span>
+                                <h2 v-if="screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].subtitle">{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].subtitle }}</h2>
                             </div>
-                            <h2>{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].signageDislaySubtitleName }}</h2>
                         </div>
-                        <p class="title-en">{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].signageDisplayEnglishName }}</p>
+                        <div class="title-en">
+                            <p>{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].entitle }}</p>
+                        </div>
                     </div>
                 </div>
                 <div v-for="(_, i) in [...Array(6)]" :key="`pf${rowNum}${i}`" class="tablecell tablecell-pf">
@@ -68,7 +70,18 @@ export default {
         },
         // 作品ID配列
         performanceMovieIdArray() {
-            return Object.keys(this.screeningEventsByMovieId);
+            const idArray = Object.keys(this.screeningEventsByMovieId);
+            // 作品IDが新しいものを優先表示
+            idArray.sort((a, b) => {
+                if (a > b) {
+                    return -1;
+                }
+                if (a < b) {
+                    return 1;
+                }
+                return 0;
+            });
+            return idArray;
         },
     },
     methods: {
@@ -191,9 +204,9 @@ export default {
                         videoFormat: b.superEvent.videoFormat,
                         soundFormat: b.superEvent.soundFormat,
                         startHHmm: moment(b.startDate).format('HH:mm'),
-                        signageDisplayName: additionalProps.signageDisplayName || b.superEvent.name.ja,
-                        signageDislaySubtitleName: additionalProps.signageDislaySubtitleName || b.superEvent.headline.ja,
-                        signageDisplayEnglishName: b.superEvent.name.en,
+                        title: additionalProps.signageDisplayName || b.superEvent.name.ja,
+                        subtitle: additionalProps.signageDislaySubtitleName || b.superEvent.headline.ja,
+                        entitle: b.superEvent.name.en,
                         addressEnglish: b.location.address.en,
                         availabilityName: this.getAvailabilityNameByRemainingAttendeeCapacity(b.remainingAttendeeCapacity),
                     });
@@ -297,14 +310,21 @@ $color_status_bg: #092147;
                 .title-main-and-sub {
                     position: absolute;
                     width: 100%;
+                    height: 75%;
                     left: 0;
-                    top: 50%;
-                    transform: translateY(-50%);
+                    top: 0;
+                    display: table;
                 }
                 .title-main {
+                    display: table-cell;
+                    vertical-align: middle;
                     position: relative;
                     h1 {
                         font-size: 2.4vw;
+                    }
+                    h2 {
+                        font-size: 1.5vw;
+                        font-weight: lighter;
                     }
                     &.title-main-rating {
                         padding-right: 6.4vw;
@@ -319,15 +339,13 @@ $color_status_bg: #092147;
                         border: 1px solid #fff;
                     }
                 }
-                h2 {
-                    font-size: 1.2vw;
-                    font-weight: lighter;
-                }
                 .title-en {
                     position: absolute;
                     bottom: 0;
-                    left: 0.2vw;
-                    font-size: 1vw;
+                    width: 100%;
+                    height: 25%;
+                    left: 0.15vw;
+                    font-size: 1.15vw;
                 }
             }
         }
@@ -343,11 +361,10 @@ $color_status_bg: #092147;
                 > div {
                     display: table;
                     width: 100%;
-                    height: 50%;
                 }
                 .pf-time {
                     border-bottom: 2px solid #000;
-                    height: 50%;
+                    height: 54%;
                     > h2 {
                         display: table-cell;
                         vertical-align: middle;
@@ -355,6 +372,7 @@ $color_status_bg: #092147;
                     }
                 }
                 .pf-data {
+                    height: 46%;
                     > div {
                         width: 50%;
                         display: table-cell;
@@ -423,7 +441,7 @@ $color_status_bg: #092147;
                 &::before {
                     width: 1.6vw;
                     height: 1.6vw;
-                    margin-right: 0.4vw;
+                    margin-right: 0.5vw;
                 }
             }
             .dayname {
@@ -439,8 +457,6 @@ $color_status_bg: #092147;
                 height: 24px;
                 position: relative;
                 display: block;
-            }
-            .msgtext {
             }
         }
         .logo {

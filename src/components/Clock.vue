@@ -1,11 +1,11 @@
 <template>
     <span class="clock">
-        {{ date }}
+        <span>{{ date }}</span>
         <span class="dayname">{{ dayname }}</span>
         <span class="time icon-clock">
-            {{ HH }}
+            <span>{{ HH }}</span>
             <span class="colon">:</span>
-            {{ mm }}
+            <span>{{ mm }}</span>
         </span>
     </span>
 </template>
