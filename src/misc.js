@@ -39,7 +39,6 @@ export function fetchEnv() {
                 !env.authConfig ||
                 !env.cognitoUser ||
                 !env.CINERINO_API_ENDPOINT ||
-                !env.authConfig.region ||
                 !env.authConfig.userPoolId ||
                 !env.authConfig.userPoolWebClientId ||
                 !env.cognitoUser.userId ||

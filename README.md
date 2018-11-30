@@ -28,7 +28,6 @@ STBで開くURLに`https://${basic認証ID}:${basic認証パスワード}@******
 set STATUS_THRESHOLD_CROWDED=**********「〇」が「△」になる残席数閾値(デフォルト=10)**********
 set CINERINO_SCHEDULE_FETCH_TIMEOUT=**********CinerinoAPIへの上映情報のfetchのタイムアウトms(デフォルト=50000)**********
 set CINERINO_API_ENDPOINT=**********CinerinoAPIのエンドポイント**********
-set COGNITO_REGION=**********COGNITO_REGION**********
 set COGNITO_USER_POOL_ID=**********COGNITO_USER_POOL_ID**********
 set COGNITO_USER_POOL_CLIENT_ID=**********COGNITO_USER_POOL_CLIENT_ID**********
 set COGNITO_USER_ID=**********COGNITO_USER_ID**********

@@ -29,7 +29,7 @@ Vue.config.productionTip = false;
         await cinerinoPlugin.install(Vue, { authConfig: window.appEnv.authConfig, cognitoUser: window.appEnv.cognitoUser, CINERINO_API_ENDPOINT: window.appEnv.CINERINO_API_ENDPOINT });
     } catch (e) {
         console.log('[catched][main.js]', e);
-        store.commit('UPDATE_systemMsg', `[FATAL] init Auth Error: ${e.message}`);
+        store.commit('UPDATE_systemMsg', `init Auth Error: ${e.message}`);
     }
 
     return new Vue({
