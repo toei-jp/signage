@@ -15,13 +15,14 @@
 </template>
 
 <script>
-import * as moment from 'moment';
+import dayjs from 'dayjs';
+import isBetween from 'dayjs/plugin/isBetween';
 import { diff } from 'deep-diff';
 import { sleep, promiseTimeoutWrapper, fetchEnv } from '../misc';
 import ScheduleTable from '../components/ScheduleTable';
 import Clock from '../components/Clock';
 
-moment.locale('ja');
+dayjs.extend(isBetween);
 
 export default {
     name: 'mainview',
@@ -105,7 +106,7 @@ export default {
                 if (!this.theater) {
                     await this.fetchTheaterByUrlParam();
                 }
-                const moment_now = moment();
+                const dayjs_now = dayjs();
                 const { eventService } = await this.$cinerino.getAuthedServices();
                 const screeningEvents = (await promiseTimeoutWrapper(
                     window.appEnv.CINERINO_SCHEDULE_FETCH_TIMEOUT || 50000,
@@ -113,15 +114,15 @@ export default {
                         superEvent: {
                             locationBranchCodes: [this.theater.location.branchCode],
                         },
-                        startFrom: moment_now.toDate(),
-                        endThrough: moment()
-                            .hour(23)
-                            .minute(59)
+                        startFrom: dayjs_now.toDate(),
+                        endThrough: dayjs()
+                            .set('hour', 23)
+                            .set('minute', 59)
                             .toDate(),
                     }),
                 )).data.filter((event) => {
                     // 購入可能状態の上映だけ抽出する
-                    return /EventScheduled|EventRescheduled/.test(event.eventStatus) && moment_now.isBetween(event.offers.validFrom, event.offers.validThrough);
+                    return /EventScheduled|EventRescheduled/.test(event.eventStatus) && dayjs_now.isBetween(event.offers.validFrom, event.offers.validThrough);
                 });
                 if (!screeningEvents.length) {
                     this.$store.commit('UPDATE_systemMsg', '現在表示できるスケジュールはありません');
@@ -161,7 +162,7 @@ export default {
                         contentRating: b.workPerformed.contentRating !== 'G' ? b.workPerformed.contentRating : '',
                         videoFormat: b.superEvent.videoFormat,
                         soundFormat: b.superEvent.soundFormat,
-                        startHHmm: moment(b.startDate).format('HH:mm'),
+                        startHHmm: dayjs(b.startDate).format('HH:mm'),
                         title: additionalProps.signageDisplayName || b.superEvent.name.ja,
                         subtitle: additionalProps.signageDislaySubtitleName || b.superEvent.headline.ja,
                         entitle: b.superEvent.name.en,
@@ -173,7 +174,7 @@ export default {
                 this.screeningEventsByMovieId = screeningEventsByMovieId;
                 this.$store.commit('UPDATE_systemMsg', '');
             } catch (e) {
-                this.$store.commit('UPDATE_systemMsg', `更新処理に失敗しました (${moment().format('HH:mm')})(${e.message})`);
+                this.$store.commit('UPDATE_systemMsg', `更新処理に失敗しました (${dayjs().format('HH:mm')})(${e.message})`);
             }
             this.busy_update = false;
             return true;

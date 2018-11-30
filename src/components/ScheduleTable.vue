@@ -7,9 +7,7 @@
                         <div :class="['title-main', { 'title-main-rating': screeningEventsByMovieId[movieIdArray[rowNum]][0].contentRating }]">
                             <h1>{{ screeningEventsByMovieId[movieIdArray[rowNum]][0].title }}</h1>
                             <span class="mark mark-rating" v-if="screeningEventsByMovieId[movieIdArray[rowNum]][0].contentRating">
-                                {{
-                                screeningEventsByMovieId[movieIdArray[rowNum]][0].contentRating
-                                }}
+                                {{ screeningEventsByMovieId[movieIdArray[rowNum]][0].contentRating }}
                             </span>
                             <h2 v-if="screeningEventsByMovieId[movieIdArray[rowNum]][0].subtitle">{{ screeningEventsByMovieId[movieIdArray[rowNum]][0].subtitle }}</h2>
                         </div>
@@ -25,9 +23,7 @@
                         <h2>{{ screeningEventsByMovieId[movieIdArray[rowNum]][i].startHHmm }}</h2>
                     </div>
                     <div class="pf-data">
-                        <div :class="`pf-data-status pf-data-status-${screeningEventsByMovieId[movieIdArray[rowNum]][i].availabilityName}`">
-                            <span></span>
-                        </div>
+                        <div :class="`pf-data-status pf-data-status-${screeningEventsByMovieId[movieIdArray[rowNum]][i].availabilityName}`"><span></span></div>
                         <div class="pf-data-floor">{{ screeningEventsByMovieId[movieIdArray[rowNum]][i].addressEnglish }}</div>
                     </div>
                 </div>

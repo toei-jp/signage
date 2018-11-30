@@ -1,47 +1,54 @@
 <template>
     <span class="clock">
-        <span>{{ moment_now.format('M/D') }}</span>
-        <span class="dayname">{{ moment_now.format('(ddd)') }}</span>
+        <span>{{ dayjs_now.format('M/D') }}</span>
+        <span class="dayname">({{ dayname }})</span>
         <span class="time icon-clock">
-            <span>{{ moment_now.format('HH') }}</span>
+            <span>{{ dayjs_now.format('HH') }}</span>
             <span class="colon">:</span>
-            <span>{{ moment_now.format('mm') }}</span>
+            <span>{{ dayjs_now.format('mm') }}</span>
         </span>
     </span>
 </template>
 
 <script>
-import * as moment from 'moment';
+import dayjs from 'dayjs';
 import { getNextTickUnixtime } from '../misc';
+
+const dnameArray = ['日', '月', '火', '水', '木', '金', '土'];
 
 export default {
     data() {
         return {
-            moment_now: moment(),
+            dayjs_now: dayjs(),
             min3Count: 0, // 3分おきの着火用カウント
-            timeoutInstance_updateMoment: null,
+            timeoutInstance_update: null,
         };
     },
+    computed: {
+        dayname() {
+            return dnameArray[this.dayjs_now.day()];
+        },
+    },
     methods: {
-        setTimeoutUpdateMoment() {
-            clearTimeout(this.timeoutInstance_updateMoment);
-            this.timeoutInstance_updateMoment = setTimeout(() => {
-                this.moment_now = moment();
+        setTimeoutUpdate() {
+            clearTimeout(this.timeoutInstance_update);
+            this.timeoutInstance_update = setTimeout(() => {
+                this.dayjs_now = dayjs();
                 this.$emit('tick');
                 this.min3Count++;
                 if (this.min3Count === 3) {
                     this.min3Count = 0;
                     this.$emit('tick3min');
                 }
-                this.setTimeoutUpdateMoment();
+                this.setTimeoutUpdate();
             }, getNextTickUnixtime());
         },
     },
     created() {
-        this.setTimeoutUpdateMoment();
+        this.setTimeoutUpdate();
     },
     beforeDestroy() {
-        clearTimeout(this.timeoutInstance_updateMoment);
+        clearTimeout(this.timeoutInstance_update);
     },
 };
 </script>

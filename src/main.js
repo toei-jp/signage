@@ -1,7 +1,5 @@
 import 'normalize.css';
 import Vue from 'vue';
-import axios from 'axios';
-import VueAxios from 'vue-axios';
 import App from './App.vue';
 import router from './router';
 import store from './store';
@@ -9,10 +7,6 @@ import cinerinoPlugin from './plugins/cinerio';
 import { sleep, fetchEnv } from './misc';
 
 Vue.config.productionTip = false;
-
-axios.defaults.timeout = 50000;
-axios.defaults.cache = false;
-Vue.use(VueAxios, axios);
 
 (async () => {
     try {

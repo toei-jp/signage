@@ -1,5 +1,3 @@
-const webpack = require('./node_modules/webpack');
-
 module.exports = {
     filenameHashing: false,
     devServer: {
@@ -30,7 +28,4 @@ module.exports = {
         },
     },
     productionSourceMap: false,
-    chainWebpack: (config) => {
-        config.plugin('ignore').use(webpack.IgnorePlugin, [/^\.\/locale$/, /moment$/]);
-    },
 };
