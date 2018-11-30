@@ -30,14 +30,13 @@ Vue.use(VueAxios, axios);
                 await sleep(60000);
             }
         }
+        console.log('[main.js][init] server environment variables', window.appEnv);
         // this.$cinerino をセットする。Cognito認証に失敗しても自動でやり直すのでここではスルーする
         await cinerinoPlugin.install(Vue, { authConfig: window.appEnv.authConfig, cognitoUser: window.appEnv.cognitoUser, CINERINO_API_ENDPOINT: window.appEnv.CINERINO_API_ENDPOINT });
     } catch (e) {
         console.log('[main.js][catched]', e);
         store.commit('UPDATE_systemMsg', `[FATAL] init Auth Error: ${e.message}`);
     }
-
-    Vue.component('Clock', require('./components/Clock.vue').default);
 
     return new Vue({
         router,

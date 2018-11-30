@@ -15,8 +15,9 @@ CinerinoクライアントはfetchAPIを使っているので外付けタイム�
 環境変数を3分おきに取得して、変更を検知したらリロードする
 
 BrightSignは`window.navigator.onLine`とOnline/Offlineイベントが機能しないので注意する
+(LANケーブルが抜けている状況でタイムアウト設定の無い通信をすると永久に通信を試みて詰む)
 
-フォントファイルはBrightSign本体に埋め込んでアップロードはしない。
+フォントファイル(`TTHiraginoUDSansFStdN-W3.ttf`)はBrightSign本体に埋め込んでアップロードはしない。
 
 ## Usage
 Auzre Web Appsにgitデプロイ、ドキュメントルートを`site\wwwroot\dist`に設定、次項の環境変数をセット。

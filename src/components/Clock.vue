@@ -1,11 +1,11 @@
 <template>
     <span class="clock">
-        <span>{{ date }}</span>
-        <span class="dayname">{{ dayname }}</span>
+        <span>{{ moment_now.format('M/D') }}</span>
+        <span class="dayname">{{ moment_now.format('(ddd)') }}</span>
         <span class="time icon-clock">
-            <span>{{ HH }}</span>
+            <span>{{ moment_now.format('HH') }}</span>
             <span class="colon">:</span>
-            <span>{{ mm }}</span>
+            <span>{{ moment_now.format('mm') }}</span>
         </span>
     </span>
 </template>
@@ -14,29 +14,13 @@
 import * as moment from 'moment';
 import { getNextTickUnixtime } from '../misc';
 
-// 3分おきの着火用カウント
-let min3Count = 0;
-
 export default {
     data() {
         return {
             moment_now: moment(),
+            min3Count: 0, // 3分おきの着火用カウント
             timeoutInstance_updateMoment: null,
         };
-    },
-    computed: {
-        date() {
-            return this.moment_now.format('M/D');
-        },
-        dayname() {
-            return this.moment_now.format('(ddd)');
-        },
-        HH() {
-            return this.moment_now.format('HH');
-        },
-        mm() {
-            return this.moment_now.format('mm');
-        },
     },
     methods: {
         setTimeoutUpdateMoment() {
@@ -44,9 +28,9 @@ export default {
             this.timeoutInstance_updateMoment = setTimeout(() => {
                 this.moment_now = moment();
                 this.$emit('tick');
-                min3Count++;
-                if (min3Count === 3) {
-                    min3Count = 0;
+                this.min3Count++;
+                if (this.min3Count === 3) {
+                    this.min3Count = 0;
                     this.$emit('tick3min');
                 }
                 this.setTimeoutUpdateMoment();

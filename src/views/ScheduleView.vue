@@ -1,42 +1,9 @@
 <template>
     <div class="maincontent">
-        <div class="maintable">
-            <div v-for="(_, rowNum) in [...Array(5)]" :key="rowNum" class="tablerow">
-                <div class="tablecell tablecell-title">
-                    <div class="title" v-if="performanceMovieIdArray[rowNum] && screeningEventsByMovieId[performanceMovieIdArray[rowNum]]">
-                        <div class="title-main-and-sub">
-                            <div :class="['title-main', { 'title-main-rating': screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].contentRating }]">
-                                <h1>{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].title }}</h1>
-                                <span
-                                    class="mark mark-rating"
-                                    v-if="screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].contentRating"
-                                >{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].contentRating }}</span>
-                                <h2 v-if="screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].subtitle">{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].subtitle }}</h2>
-                            </div>
-                        </div>
-                        <div class="title-en">
-                            <p>{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][0].entitle }}</p>
-                        </div>
-                    </div>
-                </div>
-                <div v-for="(_, i) in [...Array(6)]" :key="`pf${rowNum}${i}`" class="tablecell tablecell-pf">
-                    <div class="pf" v-if="screeningEventsByMovieId[performanceMovieIdArray[rowNum]] && screeningEventsByMovieId[performanceMovieIdArray[rowNum]][i]">
-                        <div class="pf-time">
-                            <h2>{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][i].startHHmm }}</h2>
-                        </div>
-                        <div class="pf-data">
-                            <div :class="`pf-data-status pf-data-status-${screeningEventsByMovieId[performanceMovieIdArray[rowNum]][i].availabilityName}`">
-                                <span></span>
-                            </div>
-                            <div class="pf-data-floor">{{ screeningEventsByMovieId[performanceMovieIdArray[rowNum]][i].addressEnglish }}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <schedule-table :screeningEventsByMovieId="screeningEventsByMovieId"></schedule-table>
         <footer>
             <div class="clockcontainer">
-                <clock class="clock" @tick="update()" @tick3min="checkEnv()"></clock>
+                <clock class="clock" @tick="update();" @tick3min="checkEnv();"></clock>
             </div>
             <div class="msg">
                 <span class="anim-loading" v-if="busy_update"></span>
@@ -51,16 +18,22 @@
 import * as moment from 'moment';
 import { diff } from 'deep-diff';
 import { sleep, promiseTimeoutWrapper, fetchEnv } from '../misc';
+import ScheduleTable from '../components/ScheduleTable';
+import Clock from '../components/Clock';
 
 moment.locale('ja');
 
 export default {
     name: 'mainview',
+    components: {
+        Clock,
+        ScheduleTable,
+    },
     data() {
         return {
             theater: null,
             busy_update: true,
-            screeningEventsByMovieId: [],
+            screeningEventsByMovieId: {},
         };
     },
     computed: {
@@ -68,24 +41,9 @@ export default {
         branchCode() {
             return this.$route.params.branchCode;
         },
-        // 作品ID配列
-        performanceMovieIdArray() {
-            const idArray = Object.keys(this.screeningEventsByMovieId);
-            // 作品IDが新しいものを優先表示
-            idArray.sort((a, b) => {
-                if (a > b) {
-                    return -1;
-                }
-                if (a < b) {
-                    return 1;
-                }
-                return 0;
-            });
-            return idArray;
-        },
     },
     methods: {
-        // 定期的に環境変数を確認する
+        // 定期的に環境変数を確認して変更を検知したら自動でリロードする
         checkEnv() {
             return new Promise(async (resolve) => {
                 try {
@@ -140,7 +98,7 @@ export default {
             }
             this.busy_update = true;
             try {
-                // BrightSignはnavigator.onLineが機能しない！
+                // ※BrightSignはnavigator.onLineが機能していないので貫通してしまう
                 if (!window.navigator.onLine) {
                     throw new Error('端末がオフライン状態です');
                 }
@@ -249,12 +207,7 @@ $color_status_bg: #092147;
     color: #fff;
     padding: 0.5vw;
     overflow: hidden;
-    h1,
-    h2,
-    p {
-        margin: 0;
-    }
-    .maintable {
+    .maintable /deep/ {
         display: flex;
         flex-direction: column;
         width: 100%;
@@ -327,7 +280,9 @@ $color_status_bg: #092147;
                         font-weight: lighter;
                     }
                     &.title-main-rating {
-                        padding-right: 6.4vw;
+                        h1 {
+                            padding-right: 6.4vw;
+                        }
                     }
                     .mark {
                         position: absolute;

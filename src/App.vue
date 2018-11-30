@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-        <router-view />
+        <router-view></router-view>
     </div>
 </template>
 
@@ -28,6 +28,11 @@ tr,
 td,
 th {
     padding: 0;
+}
+h1,
+h2,
+p {
+    margin: 0;
 }
 #app {
     position: relative;

@@ -10,11 +10,11 @@ import * as cinerino from '@cinerino/api-javascript-client';
 
 let cognitoUserId = '';
 let cognitoUserPw = '';
-let is_initialized = false;
-let authExpireTime = null;
-let cinerinoServices = {}; // サービスを使う度にnewしないといけないのでここに入れて上書きしていく
+let cognitoTokenExpirationUnixTime = 0;
+let is_initialized = false; // Cinerinoクライアント使用準備完了フラグ
+let cinerinoServices = {}; // Cinerinoクライアントはサービスを使う度にnewが発生するのでここに入れて上書きしていく
 const cinerinoServiceArguments = {
-    endpoint: '',
+    endpoint: '', // CINERINO_API_ENDPOINT
     auth: cinerino.createAuthInstance({
         domain: '',
         clientId: '',
@@ -28,26 +28,29 @@ const cinerinoServiceArguments = {
     }),
 };
 
-// cinerinoClientにcognitoのトークンをセット
+// CinerinoクライアントにCognitoのjwtTokenをセット
 const setTokenToCinerinoClient = (accessToken) => {
     console.log('[cinerinoPlugin][setTokenToCinerinoClient]', accessToken, `accessToken will be expired at ${new Date(accessToken.payload.exp * 1000).toLocaleString()}`);
-    authExpireTime = accessToken.payload.exp;
+    cognitoTokenExpirationUnixTime = accessToken.payload.exp;
     cinerinoServiceArguments.auth.setCredentials({ accessToken: accessToken.jwtToken });
     is_initialized = true;
 };
 
-// 認証を実行してトークンをセット
+// Cognitoにサインインしてトークンを取得してCinerinoクライアントにセット
 const siginInAndSetAccessToken = () => {
     return new Promise(async (resolve, reject) => {
         try {
             const signInResponse = await Auth.signIn(cognitoUserId, cognitoUserPw);
             console.log('[cinerinoPlugin[siginInAndGetAccessToken] signInResponse', signInResponse);
+
+            // Cognitoユーザーのパスワード変更が必要だったらサイネージアカウント共通パスワードに変更実行
             if (signInResponse.challengeName === 'NEW_PASSWORD_REQUIRED') {
                 const completeNewPasswordChallengeResponse = await signInResponse.completeNewPasswordChallenge('M0P!X-signage');
                 console.log('[cinerinoPlugin[siginInAndGetAccessToken] completeNewPasswordChallengeResponse', completeNewPasswordChallengeResponse);
                 return window.location.reload(true);
             }
-            // ユーザーのSTATUSがCONFIRMEDで無くてもsignIn自体は成功するのでcurrentAuthenticatedUserを取る
+
+            // ユーザーのSTATUSがCONFIRMEDでなくてもIDとパスワードが合ってればsignIn自体は通ってしまうのでcurrentAuthenticatedUserを取る
             const currentAuthenticatedUser = await Auth.currentAuthenticatedUser();
             console.log('[cinerinoPlugin][siginInAndGetAccessToken] currentAuthenticatedUser', currentAuthenticatedUser);
             setTokenToCinerinoClient(currentAuthenticatedUser.signInUserSession.accessToken);
@@ -59,32 +62,16 @@ const siginInAndSetAccessToken = () => {
     });
 };
 
-// 認証状況を確認
-const checkAuth = () => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            if (!is_initialized) {
-                await siginInAndSetAccessToken();
-            }
-            await Auth.currentAuthenticatedUser();
-            resolve();
-        } catch (e) {
-            console.log('[failed][cinerinoPlugin][checkAuth]', e);
-            reject(typeof e === 'string' ? new Error(`Auth Error: ${e}`) : e);
-        }
-    });
-};
-
-// トークン更新 (expireTimeの5分前から警戒)
+// トークンを確認・更新 (Amplifyが勝手に更新してくれてる気がするが念のため)
 const refreshAuth = () => {
     return new Promise(async (resolve, reject) => {
         try {
             if (!is_initialized) {
                 await siginInAndSetAccessToken();
             }
-            const keepLimitTime = (authExpireTime - 5 * 60) * 1000;
-            if (Date.now() > keepLimitTime) {
-                console.log('[cinerinoPlugin][refreshAuth] token will be expired (and auto refreshed by Amplify) withn 5 minutes.');
+            // トークン有効期限の5分前から警戒してセッション更新
+            const keepLimitTime = cognitoTokenExpirationUnixTime - 5 * 60;
+            if (Date.now() > keepLimitTime * 1000) {
                 const currentSession = await Auth.currentSession();
                 // console.log('currentSession', currentSession);
                 setTokenToCinerinoClient(currentSession.accessToken);
@@ -97,7 +84,7 @@ const refreshAuth = () => {
     });
 };
 
-// サービスを使える状態で返す
+// Cinerinoサービスを使える状態で返す
 const getAuthedServices = () => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -121,6 +108,7 @@ const getAuthedServices = () => {
 };
 
 export default {
+    // 非同期のinstall
     install: (Vue, options) => {
         return new Promise(async (resolve, reject) => {
             try {
@@ -131,7 +119,7 @@ export default {
                 Object.defineProperties(Vue.prototype, {
                     $cinerino: {
                         get() {
-                            return { checkAuth, getAuthedServices };
+                            return { getAuthedServices };
                         },
                     },
                 });
