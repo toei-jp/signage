@@ -7,12 +7,14 @@
         <meta http-equiv="Cache-Control" content="no-cache" />
         <meta http-equiv="Expires" content="0" />
         <title>TOEIサイネージ用画面</title>
+        <% if (process.env.NODE_ENV !== 'production') { %>
         <style>
             @font-face {
                 font-family: 'HiraginoUD';
                 src: local('TTヒラギノUD角ゴF StdN W3'), url('/TTHiraginoUDSansFStdN-W3.ttf');
             }
         </style>
+        <% } %>
     </head>
     <body
         style="font-family: HiraginoUD, 'TTHiraginoUDSansFStdN-W3', 'TTヒラギノUD角ゴF StdN W3', 'ＴＴヒラギノＵＤ角ゴF StdN W3', 'ヒラギノUD角ゴF StdN W3', 'ヒラギノＵＤ角ゴF StdN W3', 'TTHiragino UD Sans F StdN W3'"
