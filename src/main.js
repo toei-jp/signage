@@ -3,7 +3,7 @@ import Vue from 'vue';
 import App from './App.vue';
 import router from './router';
 import store from './store';
-import cinerinoPlugin from './plugins/cinerio';
+import cinerinoPlugin from './plugins/cinerino';
 import { sleep, fetchEnv } from './misc';
 
 Vue.config.productionTip = false;
