@@ -8,6 +8,7 @@ dist/report.html
 /tests/e2e/screenshots/
 
 env*bat
+/public/TTHiraginoUDSansFStdN-W3.ttf
 
 # local env files
 # .env.local

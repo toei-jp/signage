@@ -244,7 +244,7 @@ $color_status_bg: #092147;
             vertical-align: top;
         }
         .tablecell-title {
-            width: 40%;
+            width: 42%;
             padding: 0.8vw;
             border-right: 2px solid #000;
             position: relative;
@@ -274,7 +274,7 @@ $color_status_bg: #092147;
                     vertical-align: middle;
                     position: relative;
                     h1 {
-                        font-size: 2.4vw;
+                        font-size: 2.34vw;
                     }
                     h2 {
                         font-size: 1.5vw;
