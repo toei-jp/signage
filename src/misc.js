@@ -20,6 +20,14 @@ export function promiseTimeoutWrapper(ms, promise) {
     ]);
 }
 
+// オブジェクトのプロパティが数値として読めなかったらnullにする
+function parseIntOrSetNull(obj, key) {
+    obj[key] = parseInt(obj[key], 10);
+    if (Number.isNaN(obj[key])) {
+        obj[key] = null;
+    }
+}
+
 // 環境変数をサーバから得る
 export function fetchEnv() {
     return new Promise(async (resolve, reject) => {
@@ -39,6 +47,8 @@ export function fetchEnv() {
             ) {
                 throw new Error('/env invalid respoponse');
             }
+            parseIntOrSetNull(env, 'CINERINO_SCHEDULE_FETCH_TIMEOUT');
+            parseIntOrSetNull(env, 'STATUS_THRESHOLD_CROWDED');
             return resolve(env);
         } catch (e) {
             return reject(e);
