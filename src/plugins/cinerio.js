@@ -41,12 +41,12 @@ const siginInAndSetAccessToken = () => {
     return new Promise(async (resolve, reject) => {
         try {
             const signInResponse = await Auth.signIn(cognitoUserId, cognitoUserPw);
-            console.log('[cinerinoPlugin[siginInAndGetAccessToken] signInResponse', signInResponse);
+            console.log('[cinerinoPlugin][siginInAndGetAccessToken] signInResponse', signInResponse);
 
             // Cognitoユーザーのパスワード変更が必要だったらサイネージアカウント共通パスワードに変更実行
             if (signInResponse.challengeName === 'NEW_PASSWORD_REQUIRED') {
                 const completeNewPasswordChallengeResponse = await signInResponse.completeNewPasswordChallenge('M0P!X-signage');
-                console.log('[cinerinoPlugin[siginInAndGetAccessToken] completeNewPasswordChallengeResponse', completeNewPasswordChallengeResponse);
+                console.log('[cinerinoPlugin][siginInAndGetAccessToken] completeNewPasswordChallengeResponse', completeNewPasswordChallengeResponse);
                 return window.location.reload(true);
             }
 
@@ -78,7 +78,7 @@ const refreshAuth = () => {
             }
             return resolve();
         } catch (e) {
-            console.log('[failed][cinerinoPlugin][refreshAuth]', e);
+            console.log('[catched][cinerinoPlugin][refreshAuth]', e);
             return reject(typeof e === 'string' ? new Error(`Auth Error: ${e}`) : e);
         }
     });
@@ -101,7 +101,7 @@ const getAuthedServices = () => {
             };
             resolve(cinerinoServices);
         } catch (e) {
-            console.log('[failed][cinerinoPlugin][getAuthedServices]', e);
+            console.log('[catched][cinerinoPlugin][getAuthedServices]', e);
             reject(typeof e === 'string' ? new Error(`Auth Error: ${e}`) : e);
         }
     });
@@ -127,7 +127,7 @@ export default {
                 await siginInAndSetAccessToken();
                 resolve();
             } catch (e) {
-                console.log('[failed][cinerinoPlugin][install]', e);
+                console.log('[catched][cinerinoPlugin][install]', e);
                 reject(typeof e === 'string' ? new Error(`Auth Error: ${e}`) : e);
             }
         });

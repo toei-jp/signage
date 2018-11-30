@@ -28,7 +28,7 @@ Vue.config.productionTip = false;
         // this.$cinerino をセットする。Cognito認証に失敗しても自動でやり直すのでここではスルーする
         await cinerinoPlugin.install(Vue, { authConfig: window.appEnv.authConfig, cognitoUser: window.appEnv.cognitoUser, CINERINO_API_ENDPOINT: window.appEnv.CINERINO_API_ENDPOINT });
     } catch (e) {
-        console.log('[main.js][catched]', e);
+        console.log('[catched][main.js]', e);
         store.commit('UPDATE_systemMsg', `[FATAL] init Auth Error: ${e.message}`);
     }
 
