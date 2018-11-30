@@ -306,10 +306,13 @@ $color_status_bg: #092147;
             }
         }
         .tablecell-pf {
-            width: 10%;
+            width: 9.666%;
             height: 101%;
             text-align: center;
             border-right: 2px solid #000;
+            &:last-child {
+                border-right: none;
+            }
             .pf {
                 width: 100%;
                 height: 100%;
