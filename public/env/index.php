@@ -12,6 +12,7 @@ $appConfigFromServer = [
         'password'=> $_SERVER['COGNITO_USER_PASSWORD'],
     ],
     'CINERINO_API_ENDPOINT' => $_SERVER['CINERINO_API_ENDPOINT'],
+    'ENV_LAST_MODIFIED' => $_SERVER['ENV_LAST_MODIFIED'],
 ];
 
 header('Content-Type: application/json; charset=UTF-8');
