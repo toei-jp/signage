@@ -52,14 +52,8 @@ export default {
         // 作品ID配列
         movieIdArray() {
             const idArray = Object.keys(this.screeningEventsByMovieId);
-            // 上映数が多い(=高需要)の作品を優先表示。上映数が同じならdatePublishedが新しい方を優先。
+            // datePublishedが新しい作品を優先表示
             idArray.sort((a, b) => {
-                if (this.screeningEventsByMovieId[a].length > this.screeningEventsByMovieId[b].length) {
-                    return -1;
-                }
-                if (this.screeningEventsByMovieId[a].length < this.screeningEventsByMovieId[b].length) {
-                    return 1;
-                }
                 if (this.screeningEventsByMovieId[a][0].datePublished > this.screeningEventsByMovieId[b][0].datePublished) {
                     return -1;
                 }
