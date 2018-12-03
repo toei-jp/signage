@@ -48,6 +48,7 @@ export function fetchEnv() {
             }
             parseIntOrSetNull(env, 'CINERINO_SCHEDULE_FETCH_TIMEOUT');
             parseIntOrSetNull(env, 'STATUS_THRESHOLD_CROWDED');
+            parseIntOrSetNull(env, 'STATUS_THRESHOLD_OUTOFDATE');
             return resolve(env);
         } catch (e) {
             return reject(e);

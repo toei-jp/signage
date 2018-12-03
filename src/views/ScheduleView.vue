@@ -7,7 +7,7 @@
             </div>
             <div class="msg">
                 <span class="anim-loading" v-if="busy_update"></span>
-                <span class="msgtext">{{ $store.state.systemMsg }}</span>
+                <span class="msgtext" v-if="$store.state.systemMsg">{{ $store.state.systemMsg }}</span>
             </div>
             <div class="logo"></div>
         </footer>
@@ -17,6 +17,7 @@
 <script>
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
+import { factory } from '@cinerino/api-javascript-client';
 import { diff } from 'deep-diff';
 import { sleep, promiseTimeoutWrapper, fetchEnv } from '../misc';
 import ScheduleTable from '../components/ScheduleTable';
@@ -34,6 +35,7 @@ export default {
         return {
             theater: null,
             busy_update: true,
+            lastupdate: '',
             screeningEventsByMovieId: {},
         };
     },
@@ -44,24 +46,28 @@ export default {
         },
     },
     methods: {
+        updateSystemMsg(msg) {
+            this.$store.commit('UPDATE_systemMsg', msg);
+        },
         // 定期的に環境変数を確認して変更を検知したら自動でリロードする
         checkEnv() {
             return new Promise(async (resolve) => {
                 try {
                     const latestEnv = await fetchEnv();
                     if (diff(window.appEnv, latestEnv)) {
-                        this.$store.commit('UPDATE_systemMsg', `環境変数の変更を検知 (20秒後リロード)`);
+                        this.updateSystemMsg(`環境変数の変更を検知 (20秒後リロード)`);
                         await sleep(20000);
                         return window.location.reload(true);
                     }
                 } catch (e) {
-                    this.$store.commit('UPDATE_systemMsg', `環境変数の再取得に失敗 ${e.message}`);
+                    this.updateSystemMsg(`[${dayjs().format('HH:mm')}] 環境変数の再取得に失敗 ${e.message}`);
                 }
                 return resolve();
             });
         },
-        // 残席数をCSSクラス用の文字列に変換
-        getAvailabilityNameByRemainingAttendeeCapacity(remainingAttendeeCapacity) {
+        // 上映枠データからCSSクラス用の文字列を決定
+        getCssNameFromScreeningEvent(screeningEvent) {
+            const { remainingAttendeeCapacity } = screeningEvent;
             if (!remainingAttendeeCapacity) {
                 return 'soldout';
             }
@@ -73,19 +79,26 @@ export default {
         // URLの劇場コードから劇場を取得・保存する
         fetchTheaterByUrlParam() {
             return new Promise(async (resolve, reject) => {
-                this.$store.commit('UPDATE_systemMsg', `劇場コード ${this.branchCode} の情報を取得中...`);
+                this.updateSystemMsg(`劇場 ${this.branchCode} の情報を取得中...`);
                 try {
                     const { organizationService } = await this.$cinerino.getAuthedServices();
-                    // cinerinoAPIはbranchCodeでtheaterを検索できない(定義はあるが実装されていない)ので一旦全て拾う
-                    const allTheaterArray = (await promiseTimeoutWrapper(180000, organizationService.searchMovieTheaters({}))).data;
+                    // ※cinerinoAPIはbranchCodeでtheaterを検索できない(定義はあるが実装されてない)ので一旦全て拾う
+                    const allTheaterArray = (await promiseTimeoutWrapper(
+                        180000,
+                        organizationService.searchMovieTheaters({
+                            // location: {
+                            //     branchCodes: [this.branchCode],
+                            // },
+                        }),
+                    )).data;
                     const theater = allTheaterArray.filter((t) => {
                         return t.location.branchCode === this.branchCode;
                     })[0];
                     if (!theater) {
-                        throw new Error(`劇場コード ${this.branchCode} の劇場情報を取得できませんでした`);
+                        throw new Error(`劇場 ${this.branchCode} の情報を取得できませんでした`);
                     }
                     this.theater = theater;
-                    this.$store.commit('UPDATE_systemMsg', '');
+                    this.updateSystemMsg('');
                     resolve();
                 } catch (e) {
                     reject(e);
@@ -108,24 +121,27 @@ export default {
                 }
                 const dayjs_now = dayjs();
                 const { eventService } = await this.$cinerino.getAuthedServices();
+                // 上映イベント検索は上映開始時刻からSTATUS_THRESHOLD_OUTOFDATE分後の上映までは表示に含めるようにする
                 const screeningEvents = (await promiseTimeoutWrapper(
                     window.appEnv.CINERINO_SCHEDULE_FETCH_TIMEOUT || 50000,
                     eventService.searchScreeningEvents({
+                        eventStatuses: [factory.chevre.eventStatusType.EventScheduled],
                         superEvent: {
                             locationBranchCodes: [this.theater.location.branchCode],
                         },
-                        startFrom: dayjs_now.toDate(),
-                        endThrough: dayjs()
+                        startFrom: dayjs_now.subtract(window.appEnv.STATUS_THRESHOLD_OUTOFDATE || 20, 'minute').toDate(),
+                        endThrough: dayjs_now
                             .set('hour', 23)
                             .set('minute', 59)
                             .toDate(),
                     }),
                 )).data.filter((event) => {
-                    // 購入可能状態の上映だけ抽出する
-                    return /EventScheduled|EventRescheduled/.test(event.eventStatus) && dayjs_now.isBetween(event.offers.validFrom, event.offers.validThrough);
+                    // 実際にPOSで販売できなければ無意味なのでvalidFromとvalidThroughでフィルターする
+                    return dayjs_now.isBetween(event.offers.validFrom, event.offers.validThrough);
                 });
                 if (!screeningEvents.length) {
-                    this.$store.commit('UPDATE_systemMsg', '現在表示できるスケジュールはありません');
+                    this.screeningEventsByMovieId = {};
+                    this.updateSystemMsg('現在表示できるスケジュールはありません');
                     this.busy_update = false;
                     return true;
                 }
@@ -167,14 +183,16 @@ export default {
                         subtitle: additionalProps.signageDislaySubtitleName || b.superEvent.headline.ja,
                         entitle: b.superEvent.name.en,
                         addressEnglish: b.location.address.en,
-                        availabilityName: this.getAvailabilityNameByRemainingAttendeeCapacity(b.remainingAttendeeCapacity),
+                        availabilityName: this.getCssNameFromScreeningEvent(b),
                     });
                     return a;
                 }, {});
                 this.screeningEventsByMovieId = screeningEventsByMovieId;
-                this.$store.commit('UPDATE_systemMsg', '');
+                this.lastupdate = dayjs().format('HH:mm');
+                this.updateSystemMsg('');
             } catch (e) {
-                this.$store.commit('UPDATE_systemMsg', `更新処理に失敗しました (${dayjs().format('HH:mm')})(${e.message})`);
+                const msg = this.lastupdate ? `(現在${this.lastupdate}時点のデータを表示中)` : '';
+                this.updateSystemMsg(`[${dayjs().format('HH:mm')}] 更新処理に失敗しました${msg} (${e.message})`);
             }
             this.busy_update = false;
             return true;
@@ -183,11 +201,11 @@ export default {
     async created() {
         try {
             await this.fetchTheaterByUrlParam();
-            this.$store.commit('UPDATE_systemMsg', `「${this.theater.name.ja}」のスケジュールを取得中...`);
             this.busy_update = false;
+            this.updateSystemMsg(`「${this.theater.name.ja}」のスケジュールを取得中...`);
             this.update();
         } catch (e) {
-            this.$store.commit('UPDATE_systemMsg', e.message);
+            this.updateSystemMsg(e.message);
             this.busy_update = false;
         }
     },
@@ -385,6 +403,7 @@ $color_status_bg: #092147;
         display: table;
         width: 100%;
         height: 4.5vw;
+        overflow: hidden;
         color: #fff;
         > div {
             display: table-cell;
@@ -410,6 +429,13 @@ $color_status_bg: #092147;
         }
         .msg {
             text-align: center;
+            .msgtext {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                padding-right: 2em;
+                display: inline-block;
+                max-height: 1.15em;
+            }
             .anim-loading {
                 margin: auto;
                 width: 24px;
