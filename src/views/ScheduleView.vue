@@ -130,7 +130,7 @@ export default {
                             locationBranchCodes: [this.theater.location.branchCode],
                         },
                         startFrom: dayjs_now.subtract(window.appEnv.STATUS_THRESHOLD_OUTOFDATE || 20, 'minute').toDate(),
-                        endThrough: dayjs_now
+                        startThrough: dayjs_now
                             .set('hour', 23)
                             .set('minute', 59)
                             .toDate(),
@@ -155,32 +155,24 @@ export default {
                     return 0;
                 });
                 // 上映情報を作品ごとにまとめつつ整形する
-                const additionalPropsByMovieId = {};
                 const screeningEventsByMovieId = screeningEvents.reduce((a, b) => {
-                    if (!a[b.superEvent.id]) {
-                        a[b.superEvent.id] = [];
+                    const movieId = b.workPerformed.identifier;
+                    if (!a[movieId]) {
+                        a[movieId] = [];
                     }
                     // 表示するのは6個まで
-                    if (a[b.superEvent.id].length === 6) {
+                    if (a[movieId].length === 6) {
                         return a;
                     }
-                    // サイネージ表示用タイトル/サブタイトルはadditionalProperty配列の中に入っている
-                    let additionalProps = additionalPropsByMovieId[b.superEvent.id];
-                    if (!additionalProps) {
-                        additionalPropsByMovieId[b.superEvent.id] = b.superEvent.additionalProperty.reduce((ap, bp) => {
-                            ap[bp.name] = bp.value;
-                            return ap;
-                        }, {});
-                        additionalProps = additionalPropsByMovieId[b.superEvent.id] || {};
-                    }
-                    a[b.superEvent.id].push({
+                    a[movieId].push({
                         id: b.id,
+                        datePublished: b.workPerformed.datePublished,
                         contentRating: b.workPerformed.contentRating !== 'G' ? b.workPerformed.contentRating : '',
                         videoFormat: b.superEvent.videoFormat,
                         soundFormat: b.superEvent.soundFormat,
                         startHHmm: dayjs(b.startDate).format('HH:mm'),
-                        title: additionalProps.signageDisplayName || b.superEvent.name.ja,
-                        subtitle: additionalProps.signageDislaySubtitleName || b.superEvent.headline.ja,
+                        title: b.workPerformed.name,
+                        subtitle: b.workPerformed.headline,
                         entitle: b.superEvent.name.en,
                         addressEnglish: b.location.address.en,
                         availabilityName: this.getCssNameFromScreeningEvent(b),
