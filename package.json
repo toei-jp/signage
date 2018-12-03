@@ -5,10 +5,11 @@
     "scripts": {
         "serve": "vue-cli-service serve",
         "build": "vue-cli-service build",
-        "lint": "vue-cli-service lint"
+        "lint": "vue-cli-service lint",
+        "replaceBuildTimestamp": "replace-in-file TIMESTAMPINJECTEDINBUILDPROCESS %date%-%time% dist/env/index.php"
     },
     "gitHooks": {
-        "pre-commit": "npm run build && git add --all"
+        "pre-commit": "npm run build && npm run replaceBuildTimestamp && git add --all"
     },
     "dependencies": {
         "@aws-amplify/auth": "^1.2.10",
@@ -34,6 +35,7 @@
         "eslint-plugin-import": "^2.14.0",
         "eslint-plugin-vue": "^4.7.1",
         "node-sass": "^4.10.0",
+        "replace-in-file": "^3.4.2",
         "sass-loader": "^7.1.0",
         "vue-cli-plugin-webpack-bundle-analyzer": "^1.2.0",
         "vue-template-compiler": "^2.5.17"
