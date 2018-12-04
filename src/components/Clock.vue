@@ -17,9 +17,15 @@ import { getNextTickUnixtime } from '../misc';
 const dnameArray = ['日', '月', '火', '水', '木', '金', '土'];
 
 export default {
+    props: {
+        dayjs_force: {
+            type: Object,
+            required: false,
+        },
+    },
     data() {
         return {
-            dayjs_now: dayjs(),
+            dayjs_now: this.dayjs_force || dayjs(),
             min3Count: 0, // 3分おきの着火用カウント
             timeoutInstance_update: null,
         };
@@ -33,7 +39,7 @@ export default {
         setTimeoutUpdate() {
             clearTimeout(this.timeoutInstance_update);
             this.timeoutInstance_update = setTimeout(() => {
-                this.dayjs_now = dayjs();
+                this.dayjs_now = this.dayjs_force || dayjs();
                 this.$emit('tick');
                 this.min3Count++;
                 if (this.min3Count === 3) {

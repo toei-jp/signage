@@ -3,10 +3,10 @@
         <schedule-table :screeningEventsByMovieId="screeningEventsByMovieId"></schedule-table>
         <footer>
             <div class="clockcontainer">
-                <clock class="clock" @tick="update();" @tick3min="checkEnv();"></clock>
+                <clock class="clock" :dayjs_force="dayjs_force" @tick="update();" @tick3min="checkEnv();"></clock>
             </div>
             <div class="msg">
-                <span class="anim-loading" v-if="busy_update"></span>
+                <span class="anim-loading" v-show="busy_update"></span>
                 <span class="msgtext" v-if="$store.state.systemMsg">{{ $store.state.systemMsg }}</span>
             </div>
             <div class="logo"></div>
@@ -33,6 +33,7 @@ export default {
     },
     data() {
         return {
+            dayjs_force: null,
             theater: null,
             busy_update: true,
             lastupdate: '',
@@ -119,7 +120,7 @@ export default {
                 if (!this.theater) {
                     await this.fetchTheaterByUrlParam();
                 }
-                const dayjs_now = dayjs();
+                const dayjs_now = this.dayjs_force || dayjs();
                 const { eventService } = await this.$cinerino.getAuthedServices();
                 // 上映イベント検索は上映開始時刻からSTATUS_THRESHOLD_OUTOFDATE分後の上映までは表示に含めるようにする
                 const screeningEvents = (await promiseTimeoutWrapper(
@@ -192,6 +193,9 @@ export default {
     },
     async created() {
         try {
+            if (this.$route.query.unix) {
+                this.dayjs_force = dayjs.unix(this.$route.query.unix);
+            }
             await this.fetchTheaterByUrlParam();
             this.busy_update = false;
             this.updateSystemMsg(`「${this.theater.name.ja}」のスケジュールを取得中...`);
@@ -421,10 +425,11 @@ $color_status_bg: #092147;
         }
         .msg {
             text-align: center;
+            vertical-align: bottom;
             .msgtext {
                 overflow: hidden;
                 text-overflow: ellipsis;
-                padding-right: 2em;
+                padding: 0 1em;
                 display: inline-block;
                 max-height: 1.15em;
             }
