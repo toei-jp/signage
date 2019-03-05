@@ -156,6 +156,7 @@ export default {
                     return 0;
                 });
                 // 上映情報を作品ごとにまとめつつ整形する
+                const additionalPropsByMovieId = {};
                 const screeningEventsByMovieId = screeningEvents.reduce((a, b) => {
                     const movieId = b.workPerformed.identifier;
                     if (!a[movieId]) {
@@ -165,6 +166,15 @@ export default {
                     if (a[movieId].length === 6) {
                         return a;
                     }
+                    // サイネージ表示用のタイトル(signageDisplayName)/サブタイトル(signageDislaySubtitleName)はadditionalProperty配列の中に入っている
+                    let additionalProps = additionalPropsByMovieId[movieId];
+                    if (!additionalProps) {
+                        additionalPropsByMovieId[movieId] = b.superEvent.additionalProperty.reduce((ap, bp) => {
+                            ap[bp.name] = bp.value;
+                            return ap;
+                        }, {});
+                        additionalProps = additionalPropsByMovieId[movieId] || {};
+                    }
                     a[movieId].push({
                         id: b.id,
                         datePublished: b.workPerformed.datePublished,
@@ -172,8 +182,8 @@ export default {
                         videoFormat: b.superEvent.videoFormat,
                         soundFormat: b.superEvent.soundFormat,
                         startHHmm: dayjs(b.startDate).format('HH:mm'),
-                        title: b.workPerformed.name,
-                        subtitle: b.workPerformed.headline,
+                        title: additionalProps.signageDisplayName || b.workPerformed.name,
+                        subtitle: additionalProps.signageDislaySubtitleName || b.workPerformed.headline,
                         entitle: b.superEvent.name.en,
                         addressEnglish: b.location.address.en,
                         availabilityName: this.getCssNameFromScreeningEvent(b),
