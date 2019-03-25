@@ -25,7 +25,7 @@ STBで開くURLに`https://${basic認証ID}:${basic認証パスワード}@******
 
 ## Environment Variables
 ```
-set STATUS_THRESHOLD_CROWDED=**********「〇」が「△」になる残席数閾値(デフォルト=10)**********
+set STATUS_THRESHOLD_CROWDED=**********「〇」が「△」になる残席閾パーセント(デフォルト=30)**********
 set STATUS_THRESHOLD_OUTOFDATE=**********上映開始(`startDate`)の何分後にその枠を表示から消すか(※販売の`validThrough`が表示リミット時刻なのは不変)(デフォルト=20)**********
 set CINERINO_SCHEDULE_FETCH_TIMEOUT=**********CinerinoAPIへの上映情報のfetchのタイムアウトms(デフォルト=50000)**********
 set CINERINO_API_ENDPOINT=**********CinerinoAPIのエンドポイント**********
