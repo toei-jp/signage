@@ -68,11 +68,13 @@ export default {
         },
         // 上映枠データからCSSクラス用の文字列を決定
         getCssNameFromScreeningEvent(screeningEvent) {
-            const { remainingAttendeeCapacity } = screeningEvent;
+            const { remainingAttendeeCapacity, maximumAttendeeCapacity } = screeningEvent;
             if (!remainingAttendeeCapacity) {
                 return 'soldout';
             }
-            if (remainingAttendeeCapacity <= (window.appEnv.STATUS_THRESHOLD_CROWDED || 10)) {
+            const remainPercentage = (remainingAttendeeCapacity / maximumAttendeeCapacity) * 100;
+            const crowdedThresholdPercentage = window.appEnv.STATUS_THRESHOLD_CROWDED || 30;
+            if (remainPercentage <= crowdedThresholdPercentage) {
                 return 'crowded';
             }
             return 'vacant';
