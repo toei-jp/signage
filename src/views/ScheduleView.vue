@@ -3,7 +3,7 @@
         <schedule-table :screeningEventsByMovieId="screeningEventsByMovieId"></schedule-table>
         <footer>
             <div class="clockcontainer">
-                <clock class="clock" :dayjs_force="dayjs_force" @tick="update();" @tick3min="checkEnv();"></clock>
+                <clock class="clock" :dayjs_force="dayjs_force" @tick="update()" @tick3min="checkEnv()"></clock>
             </div>
             <div class="msg">
                 <span class="anim-loading" v-show="busy_update"></span>
@@ -95,7 +95,7 @@ export default {
                         }),
                     )).data;
                     const theater = allTheaterArray.filter((t) => {
-                        return t.location.branchCode === this.branchCode;
+                        return t.location && t.location.branchCode === this.branchCode;
                     })[0];
                     if (!theater) {
                         throw new Error(`劇場 ${this.branchCode} の情報を取得できませんでした`);
@@ -220,7 +220,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 $color_tablerow_bg_odd: #0a318e;
 $color_floor_bg_odd: #0e326e;
 $color_tablerow_bg_even: #004098;
@@ -234,7 +234,7 @@ $color_status_bg: #092147;
     color: #fff;
     padding: 0.5vw;
     overflow: hidden;
-    .maintable /deep/ {
+    .maintable {
         display: flex;
         flex-direction: column;
         width: 100%;
@@ -420,7 +420,7 @@ $color_status_bg: #092147;
         .clockcontainer {
             width: 22vw;
         }
-        .clock /deep/ {
+        .clock {
             font-size: 2vw;
             vertical-align: middle;
             .icon-clock {
