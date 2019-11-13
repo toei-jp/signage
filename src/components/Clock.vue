@@ -10,16 +10,17 @@
     </span>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from 'vue';
 import dayjs from 'dayjs';
 import { getNextTickUnixtime } from '../misc';
 
 const dnameArray = ['日', '月', '火', '水', '木', '金', '土'];
 
-export default {
+export default Vue.extend({
     props: {
         dayjs_force: {
-            type: Object,
+            type: Object as () => dayjs.Dayjs,
             required: false,
         },
     },
@@ -27,16 +28,16 @@ export default {
         return {
             dayjs_now: this.dayjs_force || dayjs(),
             min3Count: 0, // 3分おきの着火用カウント
-            timeoutInstance_update: null,
+            timeoutInstance_update: null as any,
         };
     },
     computed: {
-        dayname() {
+        dayname(): string {
             return dnameArray[this.dayjs_now.day()];
         },
     },
     methods: {
-        setTimeoutUpdate() {
+        setTimeoutUpdate(): void {
             clearTimeout(this.timeoutInstance_update);
             this.timeoutInstance_update = setTimeout(() => {
                 this.dayjs_now = this.dayjs_force || dayjs();
@@ -56,7 +57,7 @@ export default {
     beforeDestroy() {
         clearTimeout(this.timeoutInstance_update);
     },
-};
+});
 </script>
 
 <style lang="scss" scoped>

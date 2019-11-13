@@ -8,7 +8,7 @@ export default new Vuex.Store({
         systemMsg: '',
     },
     mutations: {
-        UPDATE_systemMsg(state, systemMsg) {
+        UPDATE_systemMsg(state, systemMsg: string) {
             state.systemMsg = systemMsg;
         },
     },

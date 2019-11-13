@@ -14,18 +14,20 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from 'vue';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
 import { factory } from '@cinerino/api-javascript-client';
+// @ts-ignore
 import { diff } from 'deep-diff';
 import { sleep, promiseTimeoutWrapper, fetchEnv } from '../misc';
-import ScheduleTable from '../components/ScheduleTable';
-import Clock from '../components/Clock';
+import ScheduleTable from '../components/ScheduleTable.vue';
+import Clock from '../components/Clock.vue';
 
 dayjs.extend(isBetween);
 
-export default {
+export default Vue.extend({
     name: 'mainview',
     components: {
         Clock,
@@ -33,8 +35,8 @@ export default {
     },
     data() {
         return {
-            dayjs_force: null,
-            theater: null,
+            dayjs_force: null as dayjs.Dayjs | null,
+            theater: null as factory.seller.IOrganization<factory.seller.IAttributes<factory.organizationType>> | null,
             busy_update: true,
             lastupdate: '',
             screeningEventsByMovieId: {},
@@ -42,34 +44,32 @@ export default {
     },
     computed: {
         // 劇場コード
-        branchCode() {
+        branchCode(): string {
             return this.$route.params.branchCode;
         },
     },
     methods: {
-        updateSystemMsg(msg) {
+        updateSystemMsg(msg: string) {
             this.$store.commit('UPDATE_systemMsg', msg);
         },
         // 定期的に環境変数を確認して変更を検知したら自動でリロードする
-        checkEnv() {
-            return new Promise(async (resolve) => {
-                try {
-                    const latestEnv = await fetchEnv();
-                    if (diff(window.appEnv, latestEnv)) {
-                        this.updateSystemMsg(`環境変数の変更を検知 (20秒後リロード)`);
-                        await sleep(20000);
-                        return window.location.reload(true);
-                    }
-                } catch (e) {
-                    this.updateSystemMsg(`[${dayjs().format('HH:mm')}] 環境変数の再取得に失敗 ${e.message}`);
+        async checkEnv(): Promise<void> {
+            try {
+                const latestEnv = await fetchEnv();
+                if (diff(window.appEnv, latestEnv)) {
+                    this.updateSystemMsg(`環境変数の変更を検知 (20秒後リロード)`);
+                    await sleep(20000);
+                    return window.location.reload(true);
                 }
-                return resolve();
-            });
+            } catch (e) {
+                this.updateSystemMsg(`[${dayjs().format('HH:mm')}] 環境変数の確認に失敗 ${e.message}`);
+            }
+            return;
         },
         // 上映枠データからCSSクラス用の文字列を決定
-        getCssNameFromScreeningEvent(screeningEvent) {
+        getCssNameFromScreeningEvent(screeningEvent: factory.chevre.event.IEvent<any>): string {
             const { remainingAttendeeCapacity, maximumAttendeeCapacity } = screeningEvent;
-            if (!remainingAttendeeCapacity) {
+            if (!remainingAttendeeCapacity || !maximumAttendeeCapacity) {
                 return 'soldout';
             }
             const remainPercentage = (remainingAttendeeCapacity / maximumAttendeeCapacity) * 100;
@@ -80,33 +80,30 @@ export default {
             return 'vacant';
         },
         // URLの劇場コードから劇場を取得・保存する
-        fetchTheaterByUrlParam() {
-            return new Promise(async (resolve, reject) => {
-                this.updateSystemMsg(`劇場 ${this.branchCode} の情報を取得中...`);
-                try {
-                    const { organizationService } = await this.$cinerino.getAuthedServices();
-                    // ※cinerinoAPIはbranchCodeでtheaterを検索できない(定義はあるが実装されてない)ので一旦全て拾う
-                    const allTheaterArray = (await promiseTimeoutWrapper(
-                        180000,
-                        organizationService.searchMovieTheaters({
-                            // location: {
-                            //     branchCodes: [this.branchCode],
-                            // },
-                        }),
-                    )).data;
-                    const theater = allTheaterArray.filter((t) => {
-                        return t.location && t.location.branchCode === this.branchCode;
-                    })[0];
-                    if (!theater) {
-                        throw new Error(`劇場 ${this.branchCode} の情報を取得できませんでした`);
-                    }
-                    this.theater = theater;
-                    this.updateSystemMsg('');
-                    resolve();
-                } catch (e) {
-                    reject(e);
-                }
+        async fetchTheaterByUrlParam(): Promise<void> {
+            this.updateSystemMsg(`劇場 ${this.branchCode} の情報を取得中...`);
+            const { sellerService } = await this.$cinerino.getAuthedServices();
+            // ※cinerinoAPIはbranchCodeでtheaterを検索できない(定義はあるが実装されてない)ので一旦全て拾う
+            const allTheaterArray = (
+                await promiseTimeoutWrapper(
+                    180000,
+                    sellerService.search({
+                        location: {
+                            branchCodes: [this.branchCode],
+                        },
+                    }),
+                )
+            ).data;
+            console.log('allTheaterArray', allTheaterArray);
+            const theater = allTheaterArray.find((t) => {
+                return t.location && t.location.branchCode === this.branchCode;
             });
+            if (!theater) {
+                throw new Error(`劇場 ${this.branchCode} の情報を取得できませんでした`);
+            }
+            this.theater = theater;
+            this.updateSystemMsg('');
+            return;
         },
         // 更新処理 (時計のtickイベントで着火)
         async update() {
@@ -122,12 +119,16 @@ export default {
                 if (!this.theater) {
                     await this.fetchTheaterByUrlParam();
                 }
+                if (!this.theater || !this.theater.location || !this.theater.location.branchCode) {
+                    throw new Error('劇場情報が取得できません');
+                }
                 const dayjs_now = this.dayjs_force || dayjs();
                 const { eventService } = await this.$cinerino.getAuthedServices();
                 // 上映イベント検索は上映開始時刻からSTATUS_THRESHOLD_OUTOFDATE分後の上映までは表示に含めるようにする
-                const screeningEvents = (await promiseTimeoutWrapper(
+                const screeningEvents = await promiseTimeoutWrapper(
                     window.appEnv.CINERINO_SCHEDULE_FETCH_TIMEOUT || 50000,
-                    eventService.searchScreeningEvents({
+                    eventService.search({
+                        typeOf: factory.chevre.eventType.ScreeningEvent,
                         eventStatuses: [factory.chevre.eventStatusType.EventScheduled],
                         superEvent: {
                             locationBranchCodes: [this.theater.location.branchCode],
@@ -138,17 +139,18 @@ export default {
                             .set('minute', 59)
                             .toDate(),
                     }),
-                )).data.filter((event) => {
+                );
+                const sellingScreeningEvents = screeningEvents.data.filter((event: any) => {
                     // 実際にPOSで販売できなければ無意味なのでvalidFromとvalidThroughでフィルターする
                     return dayjs_now.isBetween(event.offers.validFrom, event.offers.validThrough);
                 });
-                if (!screeningEvents.length) {
+                if (!sellingScreeningEvents.length) {
                     this.screeningEventsByMovieId = {};
                     this.updateSystemMsg('現在表示できるスケジュールはありません');
                     this.busy_update = false;
                     return true;
                 }
-                screeningEvents.sort((a, b) => {
+                sellingScreeningEvents.sort((a, b) => {
                     if (a.startDate < b.startDate) {
                         return -1;
                     }
@@ -158,8 +160,11 @@ export default {
                     return 0;
                 });
                 // 上映情報を作品ごとにまとめつつ整形する
-                const additionalPropsByMovieId = {};
-                const screeningEventsByMovieId = screeningEvents.reduce((a, b) => {
+                const additionalPropsByMovieId = {} as any;
+                const screeningEventsByMovieId = sellingScreeningEvents.reduce((a, b) => {
+                    if (!b || !b.workPerformed || !b.location) {
+                        return a;
+                    }
                     const movieId = b.workPerformed.identifier;
                     if (!a[movieId]) {
                         a[movieId] = [];
@@ -170,11 +175,11 @@ export default {
                     }
                     // サイネージ表示用のタイトル(signageDisplayName)/サブタイトル(signageDislaySubtitleName)はadditionalProperty配列の中に入っている
                     let additionalProps = additionalPropsByMovieId[movieId];
-                    if (!additionalProps) {
-                        additionalPropsByMovieId[movieId] = b.superEvent.additionalProperty.reduce((ap, bp) => {
-                            ap[bp.name] = bp.value;
-                            return ap;
-                        }, {});
+                    if (!additionalProps && Array.isArray(b.superEvent.additionalProperty)) {
+                        additionalPropsByMovieId[movieId] = b.superEvent.additionalProperty.reduce((acm, prop) => {
+                            acm[prop.name] = prop.value;
+                            return acm;
+                        }, {} as any);
                         additionalProps = additionalPropsByMovieId[movieId] || {};
                     }
                     a[movieId].push({
@@ -187,11 +192,11 @@ export default {
                         title: additionalProps.signageDisplayName || b.workPerformed.name,
                         subtitle: additionalProps.signageDislaySubtitleName || b.workPerformed.headline,
                         entitle: b.superEvent.name.en,
-                        addressEnglish: b.location.address.en,
+                        addressEnglish: b.location.address ? b.location.address.en : '-',
                         availabilityName: this.getCssNameFromScreeningEvent(b),
                     });
                     return a;
-                }, {});
+                }, {} as any);
                 this.screeningEventsByMovieId = screeningEventsByMovieId;
                 this.lastupdate = dayjs().format('HH:mm');
                 this.updateSystemMsg('');
@@ -205,19 +210,23 @@ export default {
     },
     async created() {
         try {
-            if (this.$route.query.unix) {
-                this.dayjs_force = dayjs.unix(this.$route.query.unix);
+            if (typeof this.$route.query.unix === 'string' && this.$route.query.unix.length) {
+                this.dayjs_force = dayjs.unix(parseInt(this.$route.query.unix, 10));
             }
             await this.fetchTheaterByUrlParam();
             this.busy_update = false;
-            this.updateSystemMsg(`「${this.theater.name.ja}」のスケジュールを取得中...`);
+            if (this.theater) {
+                this.updateSystemMsg(`「${this.theater.name.ja}」のスケジュールを取得中...`);
+            } else {
+                this.updateSystemMsg(`劇場情報取得に失敗したため再取得します`);
+            }
             this.update();
         } catch (e) {
             this.updateSystemMsg(e.message);
             this.busy_update = false;
         }
     },
-};
+});
 </script>
 
 <style lang="scss">
