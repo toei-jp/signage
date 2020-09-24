@@ -18,7 +18,7 @@
 import Vue from 'vue';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
-import { factory } from '@cinerino/api-javascript-client';
+import { factory } from '@cinerino/sdk';
 // @ts-ignore
 import { diff } from 'deep-diff';
 import { sleep, promiseTimeoutWrapper, fetchEnv } from '../misc';
@@ -36,7 +36,7 @@ export default Vue.extend({
     data() {
         return {
             dayjs_force: null as dayjs.Dayjs | null,
-            theater: null as factory.seller.IOrganization<factory.seller.IAttributes<factory.organizationType>> | null,
+            // theater: null as factory.seller.IOrganization<factory.seller.IAttributes<factory.organizationType>> | null,
             busy_update: true,
             lastupdate: '',
             screeningEventsByMovieId: {},
@@ -80,31 +80,31 @@ export default Vue.extend({
             return 'vacant';
         },
         // URLの劇場コードから劇場を取得・保存する
-        async fetchTheaterByUrlParam(): Promise<void> {
-            this.updateSystemMsg(`劇場 ${this.branchCode} の情報を取得中...`);
-            const { sellerService } = await this.$cinerino.getAuthedServices();
-            // ※cinerinoAPIはbranchCodeでtheaterを検索できない(定義はあるが実装されてない)ので一旦全て拾う
-            const allTheaterArray = (
-                await promiseTimeoutWrapper(
-                    180000,
-                    sellerService.search({
-                        location: {
-                            branchCodes: [this.branchCode],
-                        },
-                    }),
-                )
-            ).data;
-            console.log('allTheaterArray', allTheaterArray);
-            const theater = allTheaterArray.find((t) => {
-                return t.location && t.location.branchCode === this.branchCode;
-            });
-            if (!theater) {
-                throw new Error(`劇場 ${this.branchCode} の情報を取得できませんでした`);
-            }
-            this.theater = theater;
-            this.updateSystemMsg('');
-            return;
-        },
+        // async fetchTheaterByUrlParam(): Promise<void> {
+        //     this.updateSystemMsg(`劇場 ${this.branchCode} の情報を取得中...`);
+        //     const { sellerService } = await this.$cinerino.getAuthedServices();
+        //     // ※cinerinoAPIはbranchCodeでtheaterを検索できない(定義はあるが実装されてない)ので一旦全て拾う
+        //     const allTheaterArray = (
+        //         await promiseTimeoutWrapper(
+        //             180000,
+        //             sellerService.search({
+        //                 location: {
+        //                      branchCodes: [this.branchCode],
+        //                 },
+        //             }),
+        //         )
+        //     ).data;
+        //     console.log('allTheaterArray', allTheaterArray);
+        //     const theater = allTheaterArray.find((t) => {
+        //        return t.location && t.location.branchCode === this.branchCode;
+        //     });
+        //     if (!theater) {
+        //         throw new Error(`劇場 ${this.branchCode} の情報を取得できませんでした`);
+        //     }
+        //     this.theater = theater;
+        //     this.updateSystemMsg('');
+        //     return;
+        // },
         // 更新処理 (時計のtickイベントで着火)
         async update() {
             if (this.busy_update) {
@@ -116,12 +116,12 @@ export default Vue.extend({
                 if (!window.navigator.onLine) {
                     throw new Error('端末がオフライン状態です');
                 }
-                if (!this.theater) {
-                    await this.fetchTheaterByUrlParam();
-                }
-                if (!this.theater || !this.theater.location || !this.theater.location.branchCode) {
-                    throw new Error('劇場情報が取得できません');
-                }
+                // if (!this.theater) {
+                //     await this.fetchTheaterByUrlParam();
+                // }
+                // if (!this.theater || !this.theater.location || !this.theater.location.branchCode) {
+                //     throw new Error('劇場情報が取得できません');
+                // }
                 const dayjs_now = this.dayjs_force || dayjs();
                 const { eventService } = await this.$cinerino.getAuthedServices();
                 // 上映イベント検索は上映開始時刻からSTATUS_THRESHOLD_OUTOFDATE分後の上映までは表示に含めるようにする
@@ -131,7 +131,7 @@ export default Vue.extend({
                         typeOf: factory.chevre.eventType.ScreeningEvent,
                         eventStatuses: [factory.chevre.eventStatusType.EventScheduled],
                         superEvent: {
-                            locationBranchCodes: [this.theater.location.branchCode],
+                            locationBranchCodes: [this.branchCode],
                         },
                         startFrom: dayjs_now.subtract(window.appEnv.STATUS_THRESHOLD_OUTOFDATE || 20, 'minute').toDate(),
                         startThrough: dayjs_now
@@ -213,13 +213,13 @@ export default Vue.extend({
             if (typeof this.$route.query.unix === 'string' && this.$route.query.unix.length) {
                 this.dayjs_force = dayjs.unix(parseInt(this.$route.query.unix, 10));
             }
-            await this.fetchTheaterByUrlParam();
+            // await this.fetchTheaterByUrlParam();
             this.busy_update = false;
-            if (this.theater) {
-                this.updateSystemMsg(`「${this.theater.name.ja}」のスケジュールを取得中...`);
-            } else {
-                this.updateSystemMsg(`劇場情報取得に失敗したため再取得します`);
-            }
+            // if (this.theater) {
+            //     this.updateSystemMsg(`劇場 ${this.branchCode} のスケジュールを取得中...`);
+            // } else {
+            //     this.updateSystemMsg(`劇場情報取得に失敗したため再取得します`);
+            // }
             this.update();
         } catch (e) {
             this.updateSystemMsg(e.message);

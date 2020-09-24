@@ -7,7 +7,7 @@
  */
 import Auth from '@aws-amplify/auth';
 import { CognitoUser, CognitoAccessToken } from 'amazon-cognito-identity-js';
-import * as cinerino from '@cinerino/api-javascript-client';
+import * as cinerino from '@cinerino/sdk';
 
 export interface ICinerinoServices {
     eventService: cinerino.service.Event;

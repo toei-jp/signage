@@ -33,9 +33,28 @@ export default Vue.extend({
             const { sellerService } = await this.$cinerino.getAuthedServices();
             const theaterData = (await sellerService.search({})).data;
             console.log('theaterData', theaterData);
-            this.theaterArray = theaterData.filter((theater) => {
-                return !!theater.location && /TOEI/.test(theater.name.ja);
-            });
+            this.theaterArray = theaterData
+                .filter((theater) => {
+                    return theater.name && (theater.name as any).en && /TOEI/.test((theater.name as any).en);
+                })
+                .map((theater) => {
+                    if (theater.location && theater.location.branchCode) {
+                        return theater;
+                    }
+                    const name = (theater.name as any).ja;
+                    let branchCode = '';
+                    if (/渋谷/.test(name)) {
+                        branchCode = '001';
+                    } else if (/丸の内/.test(name)) {
+                        branchCode = '002';
+                    } else {
+                        branchCode = 'unknown';
+                    }
+                    theater.location = {
+                        branchCode,
+                    } as any;
+                    return theater;
+                });
         } catch (e) {
             this.$store.commit('UPDATE_systemMsg', `劇場一覧の取得に失敗しました: ${e.message}`);
         }
