@@ -12,7 +12,7 @@ $appConfigFromServer = [
         'password'=> $_SERVER['COGNITO_USER_PASSWORD'],
     ],
     'CINERINO_API_ENDPOINT' => $_SERVER['CINERINO_API_ENDPOINT'],
-    'BUILD_TIMESTAMP' => '2020/09/24-14:56:03.38',
+    'BUILD_TIMESTAMP' => 'Fri',
     'ENV_LAST_MODIFIED' => $_SERVER['ENV_LAST_MODIFIED'],
 ];
 
