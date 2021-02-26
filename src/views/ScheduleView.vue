@@ -24,6 +24,7 @@ import { diff } from 'deep-diff';
 import { sleep, promiseTimeoutWrapper, fetchEnv } from '../misc';
 import ScheduleTable from '../components/ScheduleTable.vue';
 import Clock from '../components/Clock.vue';
+import moment from 'moment';
 
 dayjs.extend(isBetween);
 
@@ -67,7 +68,7 @@ export default Vue.extend({
             return;
         },
         // 上映枠データからCSSクラス用の文字列を決定
-        getCssNameFromScreeningEvent(screeningEvent: factory.chevre.event.IEvent<any>): string {
+        getCssNameFromScreeningEvent(screeningEvent: factory.chevre.event.screeningEvent.IEvent): string {
             const { remainingAttendeeCapacity, maximumAttendeeCapacity } = screeningEvent;
             if (!remainingAttendeeCapacity || !maximumAttendeeCapacity) {
                 return 'soldout';
@@ -140,7 +141,10 @@ export default Vue.extend({
                             .toDate(),
                     }),
                 );
-                const sellingScreeningEvents = screeningEvents.data.filter((event: any) => {
+                const sellingScreeningEvents = screeningEvents.data.filter((event: factory.chevre.event.screeningEvent.IEvent) => {
+                    if (event.offers === undefined) {
+                        return false;
+                    }
                     // 実際にPOSで販売できなければ無意味なのでvalidFromとvalidThroughでフィルターする
                     return dayjs_now.isBetween(event.offers.validFrom, event.offers.validThrough);
                 });
