@@ -34,6 +34,11 @@ set COGNITO_USER_POOL_CLIENT_ID=**********COGNITO_USER_POOL_CLIENT_ID**********
 set COGNITO_USER_ID=**********COGNITO_USER_ID**********
 set COGNITO_USER_PASSWORD=**********COGNITO_USER_PASSWORD**********
 set ENV_LAST_MODIFIED=**********遠隔リロード命令用の適当な文字列**********
+set CLIENT_CREDENTIALS_CLIENT_ID=**********認証クライアントID**********
+set CLIENT_CREDENTIALS_CLIENT_SECRET=**********認証クライアントシークレット**********
+set CLIENT_CREDENTIALS_DOMAIN=**********認可サーバードメイン**********
+set PROJECT_ID=**********プロジェクトID**********
+set APP_ENV=**********アプリケーション環境**********
 ```
 
 ## Project setup
