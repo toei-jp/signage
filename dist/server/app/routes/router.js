@@ -6,7 +6,8 @@ const authorize_1 = require("./api/authorize");
 const util_1 = require("./api/util");
 exports.default = (app) => {
     app.get('/env', (_req, res, _next) => {
-        res.redirect('/api/config');
+        const url = `${'/api/config'}?${Date.now()}`;
+        res.redirect(url);
     });
     app.use((req, res, next) => {
         if ((/\.(css|js|svg|jpg|png|gif|ico|json|html|txt)/).test(req.path)) {
@@ -23,7 +24,7 @@ exports.default = (app) => {
             next();
             return;
         }
-        res.sendFile(path.resolve(`${__dirname}/../../../client/index.html`));
+        res.sendFile(path.resolve(`${__dirname}/../../../client/index.html`), { lastModified: false, etag: false });
     });
     app.all('*', (req, res, _next) => {
         res.status(http_status_1.NOT_FOUND);

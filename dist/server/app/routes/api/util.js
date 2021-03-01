@@ -77,7 +77,7 @@ router.get('/config', (_req, res) => {
             password: process.env.COGNITO_USER_PASSWORD,
         },
         CINERINO_API_ENDPOINT: process.env.CINERINO_API_ENDPOINT,
-        BUILD_TIMESTAMP: '2021/03/01-19:31:47.13',
+        BUILD_TIMESTAMP: '2021/03/01-19:49:52.41',
         ENV_LAST_MODIFIED: process.env.ENV_LAST_MODIFIED,
         ENV: process.env.APP_ENV,
         PROJECT_ID: process.env.PROJECT_ID,

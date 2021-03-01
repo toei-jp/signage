@@ -9,7 +9,8 @@ import { utilRouter } from './api/util';
 
 export default (app: express.Application) => {
     app.get('/env', (_req, res, _next) => {
-        res.redirect('/api/config');
+        const url = `${'/api/config'}?${Date.now()}`;
+        res.redirect(url);
     });
 
     app.use((req, res, next) => {
@@ -29,7 +30,7 @@ export default (app: express.Application) => {
             next();
             return;
         }
-        res.sendFile(path.resolve(`${__dirname}/../../../client/index.html`));
+        res.sendFile(path.resolve(`${__dirname}/../../../client/index.html`), { lastModified: false, etag: false });
     });
 
     app.all('*', (req, res, _next) => {
