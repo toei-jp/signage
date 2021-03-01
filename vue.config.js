@@ -1,4 +1,12 @@
 module.exports = {
+    outputDir: 'dist/client',
+    pages: {
+        index: {
+            entry: 'src/client/app/main.ts',
+            template: 'public/index.html',
+            filename: 'index.html',
+        },
+    },
     filenameHashing: false,
     devServer: {
         host: '0.0.0.0',
