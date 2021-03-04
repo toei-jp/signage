@@ -13,11 +13,7 @@ import moment from 'moment';
 
 export interface ICinerinoServices {
     eventService: cinerino.service.Event;
-    orderService: cinerino.service.Order;
-    sellerService: cinerino.service.Seller;
-    personService: cinerino.service.Person;
-    paymentService: cinerino.service.Payment;
-    placeOrderService: cinerino.service.txn.PlaceOrder;
+    placeService: cinerino.service.Place;
 }
 
 let cinerinoServices: ICinerinoServices | null = null;
@@ -32,11 +28,7 @@ export const getAuthedServices = async (): Promise<ICinerinoServices> => {
         const option = await createOption();
         cinerinoServices = {
             eventService: new cinerino.service.Event(option),
-            orderService: new cinerino.service.Order(option),
-            sellerService: new cinerino.service.Seller(option),
-            personService: new cinerino.service.Person(option),
-            paymentService: new cinerino.service.Payment(option),
-            placeOrderService: new cinerino.service.transaction.PlaceOrder(option),
+            placeService: new cinerino.service.Place(option),
         };
         return cinerinoServices;
     } catch (e) {
