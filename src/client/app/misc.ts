@@ -34,13 +34,13 @@ export const fetchEnv = async (): Promise<IAppConfig> => {
     if (
         // 必須な値の確認
         typeof env !== 'object' ||
-        !env.authConfig ||
-        !env.cognitoUser ||
-        !env.CINERINO_API_ENDPOINT ||
-        !env.authConfig.userPoolId ||
-        !env.authConfig.userPoolWebClientId ||
-        !env.cognitoUser.userId ||
-        !env.cognitoUser.password
+        // !env.authConfig ||
+        // !env.cognitoUser ||
+        !env.CINERINO_API_ENDPOINT
+        // !env.authConfig.userPoolId ||
+        // !env.authConfig.userPoolWebClientId
+        // !env.cognitoUser.userId ||
+        // !env.cognitoUser.password
     ) {
         throw new Error('/env invalid respoponse');
     }
