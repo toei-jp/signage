@@ -10,18 +10,14 @@ const debug = createDebug('basicAuth');
  * @module basicAuthMiddleware
  */
 exports.default = (req, res, next) => {
-    if (process.env.BASIC_AUTH_NAME === undefined
-        || process.env.BASIC_AUTH_PASS === undefined
-        || (/\.(css|js|svg|jpg|png|gif|ico|json|html|txt)/).test(req.path)) {
+    if (process.env.BASIC_AUTH_NAME === undefined || process.env.BASIC_AUTH_PASS === undefined || /\.(css|js|svg|jpg|png|gif|ico|json|html|txt)/.test(req.path)) {
         // 環境変数設定なしもしくは静的ファイル
         next();
         return;
     }
     debug('authenticating...', process.env.BASIC_AUTH_NAME);
     const user = basicAuth(req);
-    if (user !== undefined
-        && user.name === process.env.BASIC_AUTH_NAME
-        && user.pass === process.env.BASIC_AUTH_PASS) {
+    if (user !== undefined && user.name === process.env.BASIC_AUTH_NAME && user.pass === process.env.BASIC_AUTH_PASS) {
         debug('authenticated!');
         // 認証情報が正しければOK
         next();

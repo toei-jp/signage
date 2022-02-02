@@ -11,7 +11,7 @@
 export enum DIGITS {
     '02' = -2,
     '03' = -3,
-    '08' = -8
+    '08' = -8,
 }
 
 /**
@@ -32,7 +32,7 @@ export enum ENV {
     /**
      * 本番
      */
-    Production = 'production'
+    Production = 'production',
 }
 
 /**
@@ -46,11 +46,11 @@ export function escapeHtml(str: string): string {
     const change = (match: string): string => {
         const changeList: any = {
             '&': '&amp;',
-            '\'': '&#x27;',
+            "'": '&#x27;',
             '`': '&#x60;',
             '"': '&quot;',
             '<': '&lt;',
-            '>': '&gt;'
+            '>': '&gt;',
         };
 
         return changeList[match];
@@ -95,15 +95,13 @@ export function base64Decode(str: string): string {
 /**
  * プロジェクト情報取得
  */
-export function getProject(params: { projectId: string; projectName?: string; }) {
+export function getProject(params: { projectId: string; projectName?: string }) {
     const projects: {
-        'PROJECT_NAME': string;
-        'PROJECT_ID': string;
-        'STORAGE_URL': string;
+        PROJECT_NAME: string;
+        PROJECT_ID: string;
+        STORAGE_URL: string;
     }[] = JSON.parse(<string>process.env.PROJECTS);
-    return projects.find(p => {
-        return (params.projectName === undefined)
-            ? p.PROJECT_ID === params.projectId
-            : p.PROJECT_ID === params.projectId && p.PROJECT_NAME === params.projectName;
+    return projects.find((p) => {
+        return params.projectName === undefined ? p.PROJECT_ID === params.projectId : p.PROJECT_ID === params.projectId && p.PROJECT_NAME === params.projectName;
     });
 }

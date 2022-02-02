@@ -16,12 +16,14 @@ export default (req: Request, res: Response, next: NextFunction) => {
         const forbidden = allowedIps.every((ip) => {
             const regex = new RegExp(`^${ip}(:\\d+)?$`);
 
-            return !regex.test((<string>req.headers['x-forwarded-for']));
+            return !regex.test(<string>req.headers['x-forwarded-for']);
         });
 
         // 許可IPリストのどれにも適合しなければ拒否
         if (forbidden) {
-            res.status(FORBIDDEN).type('text').send('Forbidden');
+            res.status(FORBIDDEN)
+                .type('text')
+                .send('Forbidden');
 
             return;
         }

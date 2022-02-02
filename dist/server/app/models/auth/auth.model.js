@@ -26,7 +26,7 @@ class AuthModel {
             clientId: process.env.CLIENT_CREDENTIALS_CLIENT_ID,
             clientSecret: process.env.CLIENT_CREDENTIALS_CLIENT_SECRET,
             state: this.state,
-            scopes: this.scopes
+            scopes: this.scopes,
         });
     }
 }

@@ -47,11 +47,11 @@ function escapeHtml(str) {
     const change = (match) => {
         const changeList = {
             '&': '&amp;',
-            '\'': '&#x27;',
+            "'": '&#x27;',
             '`': '&#x60;',
             '"': '&quot;',
             '<': '&lt;',
-            '>': '&gt;'
+            '>': '&gt;',
         };
         return changeList[match];
     };
@@ -96,10 +96,8 @@ exports.base64Decode = base64Decode;
  */
 function getProject(params) {
     const projects = JSON.parse(process.env.PROJECTS);
-    return projects.find(p => {
-        return (params.projectName === undefined)
-            ? p.PROJECT_ID === params.projectId
-            : p.PROJECT_ID === params.projectId && p.PROJECT_NAME === params.projectName;
+    return projects.find((p) => {
+        return params.projectName === undefined ? p.PROJECT_ID === params.projectId : p.PROJECT_ID === params.projectId && p.PROJECT_NAME === params.projectName;
     });
 }
 exports.getProject = getProject;

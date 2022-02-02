@@ -10,7 +10,7 @@ exports.default = (app) => {
         res.redirect(url);
     });
     app.use((req, res, next) => {
-        if ((/\.(css|js|svg|jpg|png|gif|ico|json|html|txt)/).test(req.path)) {
+        if (/\.(css|js|svg|jpg|png|gif|ico|json|html|txt)/.test(req.path)) {
             res.status(404);
             res.end();
             return;

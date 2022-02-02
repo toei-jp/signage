@@ -17,7 +17,9 @@ exports.default = (req, res, next) => {
         });
         // 許可IPリストのどれにも適合しなければ拒否
         if (forbidden) {
-            res.status(http_status_1.FORBIDDEN).type('text').send('Forbidden');
+            res.status(http_status_1.FORBIDDEN)
+                .type('text')
+                .send('Forbidden');
             return;
         }
     }

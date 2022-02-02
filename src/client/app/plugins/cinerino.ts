@@ -4,8 +4,8 @@
  * 非同期のCognito認証ありきなので通常のプラグインのようにVue.use()はせずasyncでinstall()する
  * ※CinerinoクライアントはfetchAPIが使われているのでリクエスト時は別途タイムアウト処理を付ける必要あり
  */
-import Auth from '@aws-amplify/auth';
-import { CognitoUser, CognitoAccessToken } from 'amazon-cognito-identity-js';
+// import Auth from '@aws-amplify/auth';
+// import { CognitoUser, CognitoAccessToken } from 'amazon-cognito-identity-js';
 import * as cinerino from '@cinerino/sdk';
 import axios from 'axios';
 import { ImplicitGrantClient } from '@cinerino/sdk/lib/auth/implicitGrantClient';
