@@ -70,6 +70,7 @@ router.get('/config', (_req, res) => {
         //     userId: process.env.COGNITO_USER_ID,
         //     password: process.env.COGNITO_USER_PASSWORD,
         // },
+        SMART_THEATER_API_ENDPOINT: process.env.SMART_THEATER_API_ENDPOINT,
         CINERINO_API_ENDPOINT: process.env.CINERINO_API_ENDPOINT,
         BUILD_TIMESTAMP: 'TIMESTAMPINJECTEDINBUILDPROCESS',
         ENV_LAST_MODIFIED: process.env.ENV_LAST_MODIFIED,

@@ -1,16 +1,8 @@
-import { IAppConfig } from './Constants';
-import { getAuthedServices } from './plugins/cinerino';
-
-declare module 'vue/types/vue' {
-    interface Vue {
-        $cinerino: {
-            getAuthedServices: typeof getAuthedServices;
-        };
-    }
-}
+import { IAppConfig, OAuth2DataTypes } from './Constants';
 
 declare global {
     interface Window {
         appEnv: IAppConfig;
+        oAuth2data: OAuth2DataTypes;
     }
 }

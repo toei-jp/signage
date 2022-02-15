@@ -36,7 +36,8 @@ export const fetchEnv = async (): Promise<IAppConfig> => {
         typeof env !== 'object' ||
         // !env.authConfig ||
         // !env.cognitoUser ||
-        !env.CINERINO_API_ENDPOINT
+        !env.CINERINO_API_ENDPOINT ||
+        !env.SMART_THEATER_API_ENDPOINT
         // !env.authConfig.userPoolId ||
         // !env.authConfig.userPoolWebClientId
         // !env.cognitoUser.userId ||

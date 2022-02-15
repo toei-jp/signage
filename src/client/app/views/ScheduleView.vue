@@ -18,13 +18,13 @@
 import Vue from 'vue';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
-import { factory } from '@cinerino/sdk';
 // @ts-ignore
 import { diff } from 'deep-diff';
-import { sleep, promiseTimeoutWrapper, fetchEnv } from '../misc';
+import { sleep, fetchEnv } from '../misc';
 import ScheduleTable from '../components/ScheduleTable.vue';
 import Clock from '../components/Clock.vue';
-import moment from 'moment';
+import { authorize, searchMovies, searchScreeningEvent, searchScreeningEventSeries } from '../plugins/api';
+import { ScreeningEventTypes } from '../Constants';
 
 dayjs.extend(isBetween);
 
@@ -37,7 +37,6 @@ export default Vue.extend({
     data() {
         return {
             dayjs_force: null as dayjs.Dayjs | null,
-            // theater: null as factory.seller.IOrganization<factory.seller.IAttributes<factory.organizationType>> | null,
             busy_update: true,
             lastupdate: '',
             screeningEventsByMovieId: {},
@@ -55,20 +54,33 @@ export default Vue.extend({
         },
         // 定期的に環境変数を確認して変更を検知したら自動でリロードする
         async checkEnv(): Promise<void> {
-            try {
-                const latestEnv = await fetchEnv();
-                if (diff(window.appEnv, latestEnv)) {
-                    this.updateSystemMsg(`環境変数の変更を検知 (20秒後リロード)`);
-                    await sleep(20000);
-                    return window.location.reload(true);
+            const limit = 5;
+            let count = 0;
+            let loop = true;
+            while (loop) {
+                loop = false;
+                try {
+                    const latestEnv = await fetchEnv();
+                    if (diff(window.appEnv, latestEnv)) {
+                        this.updateSystemMsg(`環境変数の変更を検知 (20秒後リロード)`);
+                        await sleep(20000);
+                        return window.location.reload();
+                    }
+                } catch (e) {
+                    const error = e as any;
+                    if (count < limit) {
+                        loop = true;
+                        count++;
+                        await sleep(5000);
+                        continue;
+                    }
+                    this.updateSystemMsg(`[${dayjs().format('HH:mm')}] 環境変数の確認に失敗 ${error.message}`);
                 }
-            } catch (e) {
-                this.updateSystemMsg(`[${dayjs().format('HH:mm')}] 環境変数の確認に失敗 ${e.message}`);
             }
             return;
         },
         // 上映枠データからCSSクラス用の文字列を決定
-        getCssNameFromScreeningEvent(screeningEvent: factory.chevre.event.screeningEvent.IEvent): string {
+        getCssNameFromScreeningEvent(screeningEvent: ScreeningEventTypes): string {
             const { remainingAttendeeCapacity, maximumAttendeeCapacity } = screeningEvent;
             if (!remainingAttendeeCapacity || !maximumAttendeeCapacity) {
                 return 'soldout';
@@ -80,32 +92,6 @@ export default Vue.extend({
             }
             return 'vacant';
         },
-        // URLの劇場コードから劇場を取得・保存する
-        // async fetchTheaterByUrlParam(): Promise<void> {
-        //     this.updateSystemMsg(`劇場 ${this.branchCode} の情報を取得中...`);
-        //     const { sellerService } = await this.$cinerino.getAuthedServices();
-        //     // ※cinerinoAPIはbranchCodeでtheaterを検索できない(定義はあるが実装されてない)ので一旦全て拾う
-        //     const allTheaterArray = (
-        //         await promiseTimeoutWrapper(
-        //             180000,
-        //             sellerService.search({
-        //                 location: {
-        //                      branchCodes: [this.branchCode],
-        //                 },
-        //             }),
-        //         )
-        //     ).data;
-        //     console.log('allTheaterArray', allTheaterArray);
-        //     const theater = allTheaterArray.find((t) => {
-        //        return t.location && t.location.branchCode === this.branchCode;
-        //     });
-        //     if (!theater) {
-        //         throw new Error(`劇場 ${this.branchCode} の情報を取得できませんでした`);
-        //     }
-        //     this.theater = theater;
-        //     this.updateSystemMsg('');
-        //     return;
-        // },
         // 更新処理 (時計のtickイベントで着火)
         async update() {
             if (this.busy_update) {
@@ -117,31 +103,24 @@ export default Vue.extend({
                 if (!window.navigator.onLine) {
                     throw new Error('端末がオフライン状態です');
                 }
-                // if (!this.theater) {
-                //     await this.fetchTheaterByUrlParam();
-                // }
-                // if (!this.theater || !this.theater.location || !this.theater.location.branchCode) {
-                //     throw new Error('劇場情報が取得できません');
-                // }
+                await authorize();
                 const dayjs_now = this.dayjs_force || dayjs();
-                const { eventService } = await this.$cinerino.getAuthedServices();
+                const startFrom = dayjs_now
+                    .subtract(window.appEnv.STATUS_THRESHOLD_OUTOFDATE || 20, 'minute')
+                    .toDate()
+                    .toISOString();
+                const startThrough = dayjs_now
+                    .set('hour', 23)
+                    .set('minute', 59)
+                    .toDate()
+                    .toISOString();
                 // 上映イベント検索は上映開始時刻からSTATUS_THRESHOLD_OUTOFDATE分後の上映までは表示に含めるようにする
-                const screeningEvents = await promiseTimeoutWrapper(
-                    window.appEnv.CINERINO_SCHEDULE_FETCH_TIMEOUT || 50000,
-                    eventService.search({
-                        typeOf: factory.chevre.eventType.ScreeningEvent,
-                        eventStatuses: [factory.chevre.eventStatusType.EventScheduled],
-                        superEvent: {
-                            locationBranchCodes: [this.branchCode],
-                        },
-                        startFrom: dayjs_now.subtract(window.appEnv.STATUS_THRESHOLD_OUTOFDATE || 20, 'minute').toDate(),
-                        startThrough: dayjs_now
-                            .set('hour', 23)
-                            .set('minute', 59)
-                            .toDate(),
-                    }),
-                );
-                const sellingScreeningEvents = screeningEvents.data.filter((event: factory.chevre.event.screeningEvent.IEvent) => {
+                const screeningEvents = await searchScreeningEvent({
+                    startFrom,
+                    startThrough,
+                    superEventLocationBranchCode: this.branchCode,
+                });
+                const sellingScreeningEvents = screeningEvents.filter((event: ScreeningEventTypes) => {
                     if (event.offers === undefined) {
                         return false;
                     }
@@ -163,8 +142,11 @@ export default Vue.extend({
                     }
                     return 0;
                 });
+                const screeningEventSeries = await searchScreeningEventSeries({
+                    locationBranchCode: this.branchCode,
+                });
+                const movies = await searchMovies({});
                 // 上映情報を作品ごとにまとめつつ整形する
-                const additionalPropsByMovieId = {} as any;
                 const screeningEventsByMovieId = sellingScreeningEvents.reduce((a, b) => {
                     if (!b || !b.workPerformed || !b.location) {
                         return a;
@@ -177,25 +159,20 @@ export default Vue.extend({
                     if (a[movieId].length === 6) {
                         return a;
                     }
-                    // サイネージ表示用のタイトル(signageDisplayName)/サブタイトル(signageDislaySubtitleName)はadditionalProperty配列の中に入っている
-                    let additionalProps = additionalPropsByMovieId[movieId];
-                    if (!additionalProps && Array.isArray(b.superEvent.additionalProperty)) {
-                        additionalPropsByMovieId[movieId] = b.superEvent.additionalProperty.reduce((acm, prop) => {
-                            acm[prop.name] = prop.value;
-                            return acm;
-                        }, {} as any);
-                        additionalProps = additionalPropsByMovieId[movieId] || {};
-                    }
+                    const screeningEventSeriesData = screeningEventSeries.find((data) => {
+                        return data.id === b.superEvent.id;
+                    });
+                    const MovieData = movies.find((movie) => {
+                        return movie.identifier === b.workPerformed.identifier;
+                    });
                     a[movieId].push({
                         id: b.id,
-                        datePublished: b.workPerformed.datePublished,
+                        datePublished: MovieData?.datePublished || '',
                         contentRating: b.workPerformed.contentRating !== 'G' ? b.workPerformed.contentRating : '',
-                        videoFormat: b.superEvent.videoFormat,
-                        soundFormat: b.superEvent.soundFormat,
                         startHHmm: dayjs(b.startDate).format('HH:mm'),
-                        title: additionalProps.signageDisplayName || b.workPerformed.name,
-                        subtitle: additionalProps.signageDislaySubtitleName || b.workPerformed.headline,
-                        entitle: b.superEvent.name.en,
+                        title: screeningEventSeriesData?.additionalProperty.find((data) => data.name === 'signageDisplayName')?.value || MovieData?.name.ja || '',
+                        subtitle: screeningEventSeriesData?.additionalProperty.find((data) => data.name === 'signageDislaySubtitleName')?.value || b.workPerformed.headline,
+                        entitle: MovieData?.name.en || '',
                         addressEnglish: b.location.address ? b.location.address.en : '-',
                         availabilityName: this.getCssNameFromScreeningEvent(b),
                     });
@@ -205,8 +182,9 @@ export default Vue.extend({
                 this.lastupdate = dayjs().format('HH:mm');
                 this.updateSystemMsg('');
             } catch (e) {
+                const error = e as any;
                 const msg = this.lastupdate ? `(現在${this.lastupdate}時点のデータを表示中)` : '';
-                this.updateSystemMsg(`[${dayjs().format('HH:mm')}] 更新処理に失敗しました${msg} (${e.message})`);
+                this.updateSystemMsg(`[${dayjs().format('HH:mm')}] 更新処理に失敗しました${msg} (${error.message})`);
             }
             this.busy_update = false;
             return true;
@@ -217,16 +195,11 @@ export default Vue.extend({
             if (typeof this.$route.query.unix === 'string' && this.$route.query.unix.length) {
                 this.dayjs_force = dayjs.unix(parseInt(this.$route.query.unix, 10));
             }
-            // await this.fetchTheaterByUrlParam();
             this.busy_update = false;
-            // if (this.theater) {
-            //     this.updateSystemMsg(`劇場 ${this.branchCode} のスケジュールを取得中...`);
-            // } else {
-            //     this.updateSystemMsg(`劇場情報取得に失敗したため再取得します`);
-            // }
             this.update();
         } catch (e) {
-            this.updateSystemMsg(e.message);
+            const error = e as any;
+            this.updateSystemMsg(error.message);
             this.busy_update = false;
         }
     },
