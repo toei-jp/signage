@@ -78,7 +78,7 @@ router.get('/config', (_req, res) => {
         // },
         SMART_THEATER_API_ENDPOINT: process.env.SMART_THEATER_API_ENDPOINT,
         CINERINO_API_ENDPOINT: process.env.CINERINO_API_ENDPOINT,
-        BUILD_TIMESTAMP: '2022/02/25-14:34:29.29',
+        BUILD_TIMESTAMP: '2022/02/25-17:31:43.85',
         ENV_LAST_MODIFIED: process.env.ENV_LAST_MODIFIED,
         ENV: process.env.APP_ENV,
         PROJECT_ID: process.env.PROJECT_ID,
