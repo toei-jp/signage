@@ -58,21 +58,23 @@ router.get('/health', (_req, res) => {
  * 設定取得
  */
 router.get('/config', (_req, res) => {
+    // 以下の値を削除する場合は、クライアント側の判定文(misc.tsのfetchEnv())更新がデプロイされた後に
+    // 削除されるようにすること。そうしないとクライアントのオートリロードがうまくいかなくなる。
     res.json({
         STATUS_THRESHOLD_CROWDED: process.env.STATUS_THRESHOLD_CROWDED,
         STATUS_THRESHOLD_OUTOFDATE: process.env.STATUS_THRESHOLD_OUTOFDATE,
         CINERINO_SCHEDULE_FETCH_TIMEOUT: process.env.CINERINO_SCHEDULE_FETCH_TIMEOUT,
-        // authConfig: {
-        //     userPoolId: process.env.COGNITO_USER_POOL_ID,
-        //     userPoolWebClientId: process.env.COGNITO_USER_POOL_CLIENT_ID,
-        // },
-        // cognitoUser: {
-        //     userId: process.env.COGNITO_USER_ID,
-        //     password: process.env.COGNITO_USER_PASSWORD,
-        // },
+        authConfig: {
+            userPoolId: process.env.COGNITO_USER_POOL_ID,
+            userPoolWebClientId: process.env.COGNITO_USER_POOL_CLIENT_ID,
+        },
+        cognitoUser: {
+            userId: process.env.COGNITO_USER_ID,
+            password: process.env.COGNITO_USER_PASSWORD,
+        },
         SMART_THEATER_API_ENDPOINT: process.env.SMART_THEATER_API_ENDPOINT,
         CINERINO_API_ENDPOINT: process.env.CINERINO_API_ENDPOINT,
-        BUILD_TIMESTAMP: 'TIMESTAMPINJECTEDINBUILDPROCESS',
+        BUILD_TIMESTAMP: process.env.BUILD_TIMESTAMP,
         ENV_LAST_MODIFIED: process.env.ENV_LAST_MODIFIED,
         ENV: process.env.APP_ENV,
         PROJECT_ID: process.env.PROJECT_ID,
