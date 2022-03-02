@@ -178,7 +178,6 @@ export default Vue.extend({
                     });
                     return a;
                 }, {} as any);
-                console.log('screeningEventsByMovieId', screeningEventsByMovieId);
                 this.screeningEventsByMovieId = screeningEventsByMovieId;
                 this.lastupdate = dayjs().format('HH:mm');
                 this.updateSystemMsg('');
