@@ -1,8 +1,6 @@
 export interface IAppConfig {
     STATUS_THRESHOLD_CROWDED: number;
     STATUS_THRESHOLD_OUTOFDATE: number;
-    CINERINO_SCHEDULE_FETCH_TIMEOUT: number;
-    CINERINO_API_ENDPOINT: string;
     SMART_THEATER_API_ENDPOINT: string;
     BUILD_TIMESTAMP: string;
     ENV_LAST_MODIFIED: string;

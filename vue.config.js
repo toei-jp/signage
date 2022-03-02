@@ -16,16 +16,6 @@ module.exports = {
                 res.json({
                     STATUS_THRESHOLD_CROWDED: process.env.STATUS_THRESHOLD_CROWDED,
                     STATUS_THRESHOLD_OUTOFDATE: process.env.STATUS_THRESHOLD_OUTOFDATE,
-                    CINERINO_SCHEDULE_FETCH_TIMEOUT: process.env.CINERINO_SCHEDULE_FETCH_TIMEOUT,
-                    authConfig: {
-                        userPoolId: process.env.COGNITO_USER_POOL_ID,
-                        userPoolWebClientId: process.env.COGNITO_USER_POOL_CLIENT_ID,
-                    },
-                    cognitoUser: {
-                        userId: process.env.COGNITO_USER_ID,
-                        password: process.env.COGNITO_USER_PASSWORD,
-                    },
-                    CINERINO_API_ENDPOINT: process.env.CINERINO_API_ENDPOINT,
                 });
             });
         },

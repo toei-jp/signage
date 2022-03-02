@@ -31,14 +31,9 @@ const parseIntOrSetNull = (obj: any, key: string): void => {
 // 環境変数をサーバから得る
 export const fetchEnv = async (): Promise<IAppConfig> => {
     const env: IAppConfig = (await axios.get(`/env?${Date.now()}`)).data;
-    if (
-        // 必須な値の確認
-        typeof env !== 'object' ||
-        !env.SMART_THEATER_API_ENDPOINT
-    ) {
+    if (typeof env !== 'object') {
         throw new Error('/env invalid respoponse');
     }
-    parseIntOrSetNull(env, 'CINERINO_SCHEDULE_FETCH_TIMEOUT');
     parseIntOrSetNull(env, 'STATUS_THRESHOLD_CROWDED');
     parseIntOrSetNull(env, 'STATUS_THRESHOLD_OUTOFDATE');
     return env;
