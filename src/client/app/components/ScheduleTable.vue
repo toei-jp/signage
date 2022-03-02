@@ -55,10 +55,10 @@ export default Vue.extend({
             const idArray = Object.keys(this.screeningEventsByMovieId);
             // datePublishedが新しい作品を優先表示
             idArray.sort((a, b) => {
-                if (this.screeningEventsByMovieId[a][0].datePublished < this.screeningEventsByMovieId[b][0].datePublished) {
+                if (this.screeningEventsByMovieId[a][0].datePublished > this.screeningEventsByMovieId[b][0].datePublished) {
                     return -1;
                 }
-                if (this.screeningEventsByMovieId[a][0].datePublished > this.screeningEventsByMovieId[b][0].datePublished) {
+                if (this.screeningEventsByMovieId[a][0].datePublished < this.screeningEventsByMovieId[b][0].datePublished) {
                     return 1;
                 }
                 return 0;

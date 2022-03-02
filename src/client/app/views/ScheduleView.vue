@@ -167,7 +167,7 @@ export default Vue.extend({
                     });
                     a[movieId].push({
                         id: b.id,
-                        datePublished: MovieData?.datePublished || '',
+                        datePublished: new Date(MovieData?.datePublished || 0),
                         contentRating: b.workPerformed.contentRating !== 'G' ? b.workPerformed.contentRating : '',
                         startHHmm: dayjs(b.startDate).format('HH:mm'),
                         title: screeningEventSeriesData?.additionalProperty.find((data) => data.name === 'signageDisplayName')?.value || MovieData?.name.ja || '',
