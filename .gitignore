@@ -9,6 +9,7 @@ dist/report.html
 
 env*bat
 *.ttf
+env*.yaml
 
 # local env files
 # .env.local
