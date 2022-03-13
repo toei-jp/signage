@@ -1,5 +1,5 @@
 {
-    "name": "toei_signage_frontend",
+    "name": "signage",
     "version": "2.3.3",
     "private": true,
     "scripts": {
