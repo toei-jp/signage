@@ -1,4 +1,10 @@
-runtime: nodejs
-env: flex
+runtime: nodejs16
+env: standard
+instance_class: F1
+automatic_scaling:
+    max_idle_instances: 1
+    min_idle_instances: automatic
+    max_instances: 1
+    min_instances: 0
 includes:
-- env.yaml
+    - env.yaml
